@@ -1,0 +1,141 @@
+use_module(library(dcg/basics)).
+
+
+
+s(s(Nps,Vps)) --> nps(Nps),vps(Vps).
+s(S1,conj(Con),S2) --> s(S1),conj(Con),s(S2).
+
+
+nps(nps(Np)) --> np(Np).
+nps(nps(Np,conj(Con),Nps)) --> np(Np),conj(Con),nps(Nps).
+nps(nps(Np,prep(Prep),Nps)) --> np(Np),prep(Prep),nps(Nps).
+
+np(np(Nouns)) --> nouns(Nouns) .
+np(np(Det,Noun))  --> det(Det),nouns(Noun).
+np(np(Prep,Noun)) --> prep(Prep),nouns(Noun).
+np(np(Adjs,Noun)) --> adjs(Adjs),nouns(Noun).
+np(np(Det,Adjs,Noun))  --> det(Det),adjs(Adjs),nouns(Noun).
+np(np(Prep,Adjs,Noun)) -->  prep(Prep),adjs(Adjs),nouns(Noun).
+np(np(Prep,Det,Noun)) -->  prep(Prep),det(Det),nouns(Noun).
+np(np(Prep,Det,Adjs,Noun)) -->  prep(Prep),det(Det),adjs(Adjs),nouns(Noun).
+
+vps(vp(Vp)) --> vp(Vp).
+vps(vps(Vp,Con,Vps)) --> vp(Vp),conj(Con),vps(Vps).
+
+vp(vp(Verb)) --> verbs(Verb).
+vp(vp(Adverb,Verb)) --> adverb(Adverb),verbs(Verb).
+vp(vp(Verb,conj(Con),Vp)) --> verbs(Verb),conj(Con),vp(Vp).
+
+adjs(adj(A)) --> adj(A).
+adjs(adjs(A, Adjs)) --> adj(A),adjs(Adjs).
+
+nouns(nouns(boy)) --> [boy].
+nouns(nouns(box)) -->[box].
+nouns(nouns(room)) -->[room].
+nouns(nouns(school)) -->[school].
+nouns(nouns(woman)) -->[woman].
+nouns(nouns(man)) -->[man].
+nouns(nouns(envelope)) -->[envelope].
+nouns(nouns(shed)) -->[shed].
+nouns(nouns(building)) -->[building].
+nouns(nouns(tree)) -->[tree].
+nouns(nouns(girl)) -->[girl].
+nouns(nouns(students)) -->[students].
+nouns(nouns(professors)) -->[professors].
+nouns(nouns(lectures) )-->[lectures].
+nouns(nouns(researchers)) -->[researchers].
+
+
+
+
+
+verbs(verbs(push)) --> [push].
+verbs(verbs(store)) --> [store].
+verbs(verbs(give)) --> [give].
+verbs(verbs(clime)) --> [clime].
+verbs(verbs(watch)) --> [watch].
+verbs(verbs(admire)) --> [admire].
+verbs(verbs(appreciate)) --> [appreciate].
+
+verbs(verbs(pushed)) --> [pushed].
+verbs(verbs(stored)) --> [stored].
+verbs(verbs(gave)) --> [gave].
+verbs(verbs(climed)) --> [climed].
+verbs(verbs(watched)) --> [watched].
+verbs(verbs(admired)) --> [admired].
+verbs(verbs(appreciated)) --> [appreciated].
+
+adj(adj(young)) --> [young].
+adj(adj(big)) --> [big].
+adj(adj(large)) --> [large].
+adj(adj(empty)) --> [empty].
+adj(adj(old)) --> [old].
+adj(adj(poor)) --> [poor].
+adj(adj(brilliant)) --> [brilliant].
+adj(adj(bright)) --> [bright] .
+adj(adj(white)) --> [white].
+adj(adj(every)) --> [every].
+adj(adj(some)) --> [some].
+adj(adj(much)) --> [much].
+adj(adj(many)) --> [many].
+adj(adj(alot)) --> [alot].
+adj(adj(few)) --> [few].
+adj(adj(several)) --> [several].
+
+
+conj(conj(and)) --> [and].
+conj(conj(but)) --> [but].
+conj(conj(or)) --> [or].
+conj(conj(nor)) --> [nor].
+conj(conj(so)) --> [so].
+conj(conj(then)) --> [then].
+conj(conj(yet)) --> [yet].
+
+det(det(the)) --> [the].
+det(det(a)) --> [a].
+det(det(an)) --> [an].
+det(det(any)) --> [any].
+det(det(another)) --> [another].
+det(det(other)) --> [other].
+det(det(my)) --> [my].
+det(det(its)) --> [its].
+det(det(our)) --> [our].
+det(det(their)) --> [their].
+det(det(her)) --> [her].
+det(det(this)) --> [this].
+det(det(these)) --> [these].
+
+
+
+
+prep(prep(with)) --> [with].
+prep(prep(at)) --> [at].
+prep(prep(after)) --> [after] .
+prep(prep(from)) --> [from].
+prep(prep(into)) --> [into].
+prep(prep(during)) --> [during].
+prep(prep(including)) --> [including].
+prep(prep(until)) --> [until].
+prep(prep(of)) --> [of].
+prep(prep(to)) --> [to].
+prep(prep(in)) --> [in].
+prep(prep(on)) --> [on].
+prep(prep(between)) --> [between].
+prep(prep(like)) --> [about].
+prep(prep(behind)) --> [behind].
+
+
+
+adverb(adverb(quickly)) --> [quickly].
+adverb(adverb(up)) --> [up].
+adverb(adverb(so)) --> [so].
+adverb(adverb(out)) --> [out].
+adverb(adverb(just)) --> [just].
+adverb(adverb(now)) --> [now].
+adverb(adverb(how)) --> [how].
+adverb(adverb(more)) --> [more].
+adverb(adverb(also)) --> [also].
+adverb(adverb(here)) --> [here].
+adverb(adverb(well)) --> [well].
+adverb(adverb(only)) --> [only].
+adverb(adverb(probably)) --> [probably].

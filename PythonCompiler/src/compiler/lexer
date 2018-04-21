@@ -1,0 +1,120 @@
+import java.util.*;
+import java.io.*;
+
+/* semantic value of token returned by scanner */
+
+public class lexer
+{
+	BufferedReader reader;
+	Yylex yy;
+	public lexer(String filein) throws FileNotFoundException 
+	{
+		reader = new BufferedReader(new FileReader(filein));
+		yy = new Yylex (reader);
+		
+	}
+	public String getNextToken(String filein) throws IOException
+	{
+		
+		
+		return yy.next_token();
+	}
+	public static void main (String[] args) throws IOException
+	{
+		BufferedReader reader = new BufferedReader(new FileReader("src/compiler/ttt.py"));
+		BufferedWriter writer = new BufferedWriter(new FileWriter("testout.txt"));
+		Yylex yy = new Yylex (reader);
+		while(true)
+		{
+			String x =yy.next_token();
+			if(x==null)
+				break;
+			writer.write(x);	
+			writer.write('\n');
+		}
+		reader.close();
+		writer.close();
+	}
+}
+%%
+%function next_token
+%type String
+
+%eofval{
+  return null;
+%eofval}
+
+
+OPERATOR = and|in|is|not|or|"+"|"-"|"*"|"/"|"//"|"%-"|"**"|"="|"!="|"<"|">"| "<="|">="|"&"| \| |"~"|"^"|"<<"|">"
+DELIMITER = [\[\]\{\}\.\(\),:;@]|"=="|"+="
+BOOLEAN = True|False
+KEYWORD = False|None|True|and|as|assert|break|class|continue|def|del|elif|else|except|finally|for|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yeild
+
+ALPHA=[A-Za-z_]
+DIGIT=[0-9]
+
+
+ALPHA_NUMERIC={IDSTART}|{DIGIT}
+NUMBER={DIGIT}+("."{DIGIT}+)(E[+-]?{DIGIT}+)?
+INTEGER = {DIGIT}+
+WHITE_SPACE=([\ \n\r\t\f\b])+
+NOSLASHQUOTE = [^\"]
+STRING = \"{NOSLASHQUOTE}*\"
+NOSLASHSINGLE = [^\']
+CHAR = \'{NOSLASHSINGLE}*\'
+ID = {ALPHA}({ALPHA}|{DIGIT})*
+COMMENTS=//[^\n]* \n
+
+
+
+%%
+
+
+<YYINITIAL> {WHITE_SPACE} { }
+<YYINITIAL> {COMMENTS} { }
+
+<YYINITIAL> {BOOLEAN} { 
+  return "BOOL\t"+yytext(); 
+}
+<YYINITIAL> {OPERATOR} { 
+  return "OPERATOR\t"+yytext(); 
+}
+
+<YYINITIAL> {KEYWORD} { 
+  return "KW\t"+yytext(); 
+}
+
+
+<YYINITIAL> {DELIMITER} { 
+  return "DELIMITER\t"+yytext(); 
+}
+
+<YYINITIAL> {ID} { 
+  return "ID\t"+yytext(); 
+}
+
+<YYINITIAL> {NUMBER} { 
+  return "DL\t"+yytext(); 
+}
+
+<YYINITIAL> {INTEGER} { 
+  return "INT\t"+yytext(); 
+}
+
+<YYINITIAL> {STRING} { 
+  return "STRING\t"+yytext(); 
+}
+<YYINITIAL> {CHAR} { 
+  return "CH\t"+yytext(); 
+}
+
+
+
+<YYINITIAL> "[]" { 
+  return "AA\t[]"; 
+}
+
+
+<YYINITIAL> . { 
+  return "Undefined\t"+yytext(); 
+}
