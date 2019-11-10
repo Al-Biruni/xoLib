@@ -1,160 +1,350 @@
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.util.Scanner;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.util.Base64;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
-public class Client implements ClientListener{
-	protected  DataOutputStream o;
-	protected  DataInputStream i;
-	protected  Socket cS;
-	protected  String message ="";
+public class Client implements ClientListener {
+
+	protected ObjectOutputStream oo;
+	protected ObjectInputStream oi;
+
+	protected Socket cS;
+	protected String message = "";
 	protected String host;
 	protected int serverPort;
-	private String userName;
-	private X_O win;
-    protected static	BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-	
-	
-	public Client(String userName){
-		 win = new X_O(); 
-		 win.setVisible(true);
-		 win.setAlwaysOnTop(true);
-		 win.setSize(400, 400);
-		 win.setCl(this);
-		
-		
-		
-		this.userName = userName;
+
+	protected User server;
+
+	private static X_O win;
+	protected static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+
+	public PublicKey pbKey;
+	protected PrivateKey prKey;
+	protected Signature rsa;
+	protected User user;
+	protected User[] knownActiveUsers;
+
+	public Client() {
+
+		win = new X_O(this);
 		serverPort = 6000;
-		try{
-			cS = new Socket("localhost",serverPort);
-			o = new DataOutputStream(cS.getOutputStream());
-			i = new DataInputStream(cS.getInputStream());
-			sendMessage("UserName-" + userName);
-		}catch(Exception e){
+		win.regDialog();
+
+		try {
+			cS = new Socket("localhost", serverPort);
+			oo = new ObjectOutputStream(cS.getOutputStream());
+			oi = new ObjectInputStream(cS.getInputStream());
+
+		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-		
-		
-		
-	}
-	Thread sendMsg;
-	Thread reciveMsg;
-	public void run() throws ClassNotFoundException, IOException{
-	
-	
-	
-		
 
- sendMsg = new Thread(){
-		String msg = "";
-		public void run(){
-			while(!(message).equals("quit")){
-				try {
-					msg= input.readLine();
-					sendMessage(msg);
-				} catch (IOException e) {
-				closeApp();
-					e.printStackTrace();
+	}
+
+	Thread receiveMsg;
+
+	public void run() throws ClassNotFoundException, IOException {
+
+		receiveMsg = new Thread() {
+			Message receivedMsg;
+
+			public void run() {
+				while (true) {
+					try {
+
+						receivedMsg = (Message) oi.readObject();
+
+						if (receivedMsg != null)
+						if(receivedMsg.TTL>0){
+							System.out.println("Client recived : \n" + receivedMsg.toString());
+							switch (receivedMsg.messageType) {
+
+							case PUBLIC:
+								win.msgArea.setText(win.msgArea.getText() + "\n " + receivedMsg.sender.userName + " : "
+										+ receivedMsg.msgBody);
+								break;
+							case PRIVATE:
+								String dMsg = decrypt(receivedMsg);
+								win.msgArea.setText(
+										win.msgArea.getText() + "\n " + receivedMsg.sender.userName + " : " + dMsg);
+								break;
+							case ONLINEUSERS:
+								User[] onUsr = receivedMsg.users;
+								for (User u : onUsr)
+									if (u != null)
+										win.listModel.addElement(u);
+								// System.out.println(u.userName);
+								break;
+							case REGISTER:
+
+					
+									if (receivedMsg.msgBody.equals("true")) {
+
+										win.userReg.setVisible(false);
+										win.chatView();
+										//win.chatView.setVisible(true);
+
+										// server = receivedMsg.sender;
+										Message getMembers = new Message(user, server, "", MessageType.GETALLUSERS);
+										// getMembers.sender=user;
+										sendMessage(getMembers);
+
+									} else {
+										win.usrNameText.setText("Choose diffrentuser name");
+
+									}
+							
+
+								break;
+							case LOGOUT:for(int i=0;i<win.listModel.getSize();i++) {
+								if(win.listModel.get(i).userName.equals(receivedMsg.msgBody)) {
+									win.listModel.remove(i);
+									break;
+								}
+							}
+								
+							case NEWUSER:
+								win.listModel.addElement(receivedMsg.receiver);
+							
+
+							break;
+							default:
+								System.out.println(receivedMsg.msgBody + "  " + receivedMsg.messageType);
+								break;
+
+							}
+						}
+
+					} catch (EOFException e) {
+						closeApp();
+						// continue;
+						// System.out.println("endofM");
+					} catch (IOException e) {
+
+						closeApp();
+					} catch (ClassNotFoundException e) {
+
+						e.printStackTrace();
+						closeApp();
+					}
+
 				}
-			if(msg.equals("quit")){
-				
-				closeApp();
 			}
-				
-		}
-		}
-	};
-		 reciveMsg = new Thread(){
-			String recivedMsg=" " ;
-			public void run(){
-			try {
-				while(!recivedMsg.equalsIgnoreCase("quit")){
-					if(i!=null)
-				recivedMsg = i.readUTF();
-				System.out.println(recivedMsg);//show Message
-				win.txtpnMessagearea.setText(win.txtpnMessagearea.getText()+"\n"+recivedMsg);
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				closeApp();
-			}
-			
-			
-			}
-			
+
 		};
-		
-sendMsg.start();
-reciveMsg.start();
 
+		receiveMsg.start();
 
 	}
-	private void sendMessage(String msg) {
 
-		try{
-			o.writeUTF(msg+"-TTL-3");
-			o.flush();
-			//showMessage("\nClient- " + message);
-		}catch(IOException e ){
-			
+	private void sendMessage(Message m) {
+
+		try {
+
+			oo.writeObject(m);
+			System.err.println(m.toString());
+			oo.flush();
+		} catch (IOException e) {
+
 		}
 	}
+
 	private void closeApp() {
-		try{
-			o.close();
-			i.close();
+		try {
+			oo.close();
+			oi.close();
 			cS.close();
 			System.exit(0);
-			sendMsg.suspend();
-			reciveMsg.suspend();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	// ----------------------------------Encryption handlers----------------------------------------------
+	public void encrypt(Message msg) {
+
+		Cipher cipher;
+		byte[] iv = new byte[128/8];
+		SecureRandom srandom = new SecureRandom();
+		srandom.nextBytes(iv);
+		IvParameterSpec ivspec = new IvParameterSpec(iv);
+		
+
+		try {
+
+			KeyGenerator kgen = KeyGenerator.getInstance("AES");
 			
-		}catch(IOException e){
+			SecretKey skey = kgen.generateKey();
+			Cipher ci = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			ci.init(Cipher.ENCRYPT_MODE, skey, ivspec);
+			byte[] encryptedtext = ci.doFinal(msg.msgBody.getBytes("UTF-8"));
+			
+			cipher = Cipher.getInstance("RSA");
+			cipher.init(Cipher.ENCRYPT_MODE, msg.receiver.pk);
+
+			byte[] encryptedKey = cipher.doFinal(skey.getEncoded());
+			byte[] encryptedIV = cipher.doFinal(iv);
+			 msg.enMsg=encryptedtext;
+			 msg.key=encryptedKey;
+			 msg.iv=encryptedIV;
+			 msg.msgBody="";
+		
+			
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidAlgorithmParameterException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
+
+		// encryptedtext = new String(encrypted);
+
 	}
-	public static void main(String [] args) {
-		System.out.println("Welcome to the X_O v2.0 secureChat application please type a user name :" );
-		
-		
+
+	public String decrypt(Message msg ) {
+		Cipher cipher;
 		try {
-			String uN = input.readLine();
-			Client c = new Client(uN);
-			c.run();
-		} catch (ClassNotFoundException e) {
+			cipher = Cipher.getInstance("RSA");
+			//make sure it is only read by  me 
+			cipher.init(Cipher.DECRYPT_MODE, this.prKey);
+
+			byte[] key = cipher.doFinal(msg.key);
+			byte[] iv = cipher.doFinal(msg.iv);
+			IvParameterSpec ivspec = new IvParameterSpec(iv);
+			
+			SecretKey skey = new SecretKeySpec(key,"AES");
+			Cipher ci = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			
+			ci.init(Cipher.DECRYPT_MODE, skey, ivspec);
+			
+			byte[] dB = ci.doFinal(msg.enMsg);
+		
+			String msgText = new String(dB);
+			return msgText;
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidAlgorithmParameterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "null";
+
 	}
+//------------------------------------------------------------------------------------------------------
+
 	@Override
 	public void onSend() {
-		String msg= win.txtEnterMessage.getText();
-		if(!msg.equals("quit")){
-		sendMessage(msg);
-		win.txtEnterMessage.setText("");
-		}else{
+		Message m = null;
+
+		String msg = win.msgText.getText();
+
+		if (win.rdbtnPrivate.isSelected()) {
+			User receiver = win.listModel.get(win.list.getSelectedIndex());
+			m = new Message(this.user, receiver, msg, MessageType.PRIVATE);
+			//byte[] eMsg = 
+					encrypt(m);
+
+			
+			//m.enMsg = eMsg;
+		} else {
+			m = new Message(user, msg);
+		}
+
+		win.msgText.setText("");
+		sendMessage(m);
+
+		if (msg.equals("quit")) {
 			win.setVisible(false);
 			closeApp();
+
 		}
 	}
+
 	@Override
-	public void onRecive(String recivedMsg) {
-		// TODO Auto-generated method stub
-		
+	public void Register(String userName) {
+		KeyPairGenerator keyGen;
+
+		try {
+			keyGen = KeyPairGenerator.getInstance("RSA");
+			keyGen.initialize(1024);
+			KeyPair pair = keyGen.generateKeyPair();
+			pbKey = pair.getPublic();
+			prKey = pair.getPrivate();
+
+			user = new User(userName, pbKey);
+			Message m = new Message(user, null, "", MessageType.REGISTER);
+
+			sendMessage(m);
+
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
-	
-	
+
+	public static void main(String[] args) {
+		Client c = null;
+		c = new Client();
+
+		try {
+			c.run();
+		} catch (ClassNotFoundException | IOException e) {
+
+			e.printStackTrace();
+		}
+
+	}
+
 }
