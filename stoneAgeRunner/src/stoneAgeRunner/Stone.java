@@ -1,18 +1,39 @@
 package stoneAgeRunner;
 
 public class Stone {
-int x ;
-int y ;
-int id;
+	byte x ;
+	byte y ;
+byte id;
 boolean vertical;
-int length;
-public Stone(int x,int y,int id,boolean v, int len) {
+byte length;
+public Stone(byte x,byte y,int id,boolean v, byte len) {
 	this.x=x;
 	this.y=y;
-	this.id=id;
+	
 	this.vertical=v;
 	this.length=len;
+	switch(length) {
+	case 2: if(vertical) {
+		this.id = (byte) (-2 -id);
+	}else {
+		this.id = (byte) (2 + id);
+	}break;
+	case 3: if(vertical) {
+		this.id = (byte) (-50 -id);
+	}else {
+		this.id = (byte) (50 + id);
+	}break;
+	}
 }
+public Stone(byte x,byte y,byte id,boolean v, byte len) {
+	this.x=x;
+	this.y=y;
+	
+	this.vertical=v;
+	this.length=len;
+	this.id=id;
+}
+
 
 @Override
 public String toString() {
@@ -27,7 +48,7 @@ public String toString() {
 	}else {
 		s+="L";
 	}
-	s+=" "+id;
+	//s+=" "+id;
 	
 	return s;
 	

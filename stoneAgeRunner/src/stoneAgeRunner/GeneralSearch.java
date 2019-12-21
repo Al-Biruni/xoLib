@@ -1,6 +1,7 @@
 package stoneAgeRunner;
 
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -14,7 +15,7 @@ public  class GeneralSearch {
 	Problem p;
 	Queue<Node> que ;
 	String queF="";
-	ArrayList<Integer>  seenStates = new ArrayList<Integer>(); 
+	ArrayList<String>  seenStates = new ArrayList<String>(); 
 	
 	
 	//static int nEx=0;
@@ -31,12 +32,12 @@ public  class GeneralSearch {
 		switch(QingFun){
 		case"BF" : que = new PriorityQueue<Node>(50000000,new BreadthFirst());break;
 		case "DF" :  que = new PriorityQueue<Node>(50000000,new DepthFirst());break;
-		case "UC" :  que = new PriorityQueue<Node>(500000,new UniformCost());break;
+		case "UC" :  que = new PriorityQueue<Node>(5000000,new UniformCost());break;
 		case "ID" :que = new PriorityQueue<Node>(5000000,new DepthFirst());break;
 		case"G1": que = new PriorityQueue<Node>(5000000,new GreedySearch(1));break;
-		case"G2":que = new PriorityQueue<Node>(5000000,new GreedySearch(2));break;
-		case"AS1":que = new PriorityQueue<Node>(50000,new AStarSearch(1));break;
-		case"AS2":que = new PriorityQueue<Node>(50000,new AStarSearch(2));break;
+		case"G2":que = new PriorityQueue<Node>(50000000,new GreedySearch(2));break;
+		case"AS1":que = new PriorityQueue<Node>(5000000,new AStarSearch(1));break;
+		case"AS2":que = new PriorityQueue<Node>(50000000,new AStarSearch(2));break;
 		}
 		//generate root children
 		genChildren(root);
@@ -85,7 +86,7 @@ public String solve() {
 				
 			}else{
 				
-				int hash =cN.myState.hashCode();
+				String hash = cN.myState.hash();
 			//	System.out.println(cN.myState.toString());
 			//	System.out.println(hash);
 				if(!seenStates.contains(hash)) {

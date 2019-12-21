@@ -13,13 +13,13 @@ public class StoneAgeProblem extends Problem {
 		
 		//int n = rand.nextInt(6) + 4;
 		//int m = rand.nextInt(6) + 4;
-		int n = 9;
-		int m = 9;
-		double difficulty =0.80;
-		String[][] grid = new String[n][m];
+		byte n = 7;
+		byte m = 9;
+		double difficulty =0.8;
+		byte[][] grid = new byte[n][m];
 		int rY = rand.nextInt(m - 2) + 1;
-		grid[1][rY]="plr";
-		grid[1][rY-1]="plr";
+		grid[1][rY]=1;
+		grid[1][rY-1]=1;
 		int pX =1;
 		int pY = rY;
 		
@@ -27,59 +27,67 @@ public class StoneAgeProblem extends Problem {
 		//System.out.println(rockN);
 	Stone[] stones = new Stone[rockN];
 		int i=0;
+		
+		// generate rocks
 			while(i<rockN) {
-				//System.out.println(i);
+			
 			int randrockPlacment = rand.nextInt(2);
 			int randrockLen = rand.nextInt(2)+2;
 			int rRx;
 			int rRy;
 			boolean aFlag = false;
 			switch(randrockPlacment) {
-			//horizontal case
+			//horizontal case 2-128
 			case 0 :
 				while(!aFlag) {
 				 rRx = rand.nextInt(n);
 				 rRy = rand.nextInt(m-randrockLen)+randrockLen;
+				 //check empty cells for rock and not to but a H car infront of player rRx!=1
 				 boolean f=true;
 				 for(int c=0;c<randrockLen;c++) {
-					if(grid[rRx][rRy-c]!=null||rRx==1) 
+					 
+					 
+					if(grid[rRx][rRy-c]!=0||rRx==1) 
 						f=false;
 				 }
 				 if(!f)
 					 continue;
+				 
 				 aFlag=true;
-				 stones[i]= new Stone(rRx,rRy,i,false,randrockLen);
+				 stones[i]= new Stone((byte) (rRx),(byte) rRy, i,false,(byte) randrockLen);
 				
 				 for(int c=0;c<randrockLen;c++) {
 					 switch(randrockLen) {
-					 case 2 :grid[rRx][rRy-c]="RHS "+i;break;
-					 
-					 case 3 :grid[rRx][rRy-c]="RHL "+i;break;
+					 // short H rocks from 2 - 50
+					 case 2 :grid[rRx][rRy-c]= (byte) (2+i) ;break;
+					 //long H rocks from 50 - 128
+					 case 3 :grid[rRx][rRy-c]= (byte) (50+i);break;
 					 default:System.err.println("wrong car length : " + randrockLen);
 					 }
 					
 					 } i++;	
 				}break;
-				//vertical case
+				//vertical case from -2 - -127
 			case 1:
 				while(!aFlag) {
 				 rRx = rand.nextInt(n-randrockLen)+randrockLen;
 				 rRy = rand.nextInt(m);
 				 boolean f =true;
 				 for(int c=0;c<randrockLen;c++) {
-						if(grid[rRx-c][rRy]!=null) 
+						if(grid[rRx-c][rRy]!=0) 
 							f=false;
 				 }
 				 if(!f)
 					 continue;
 					 aFlag=true;
-					 stones[i]= new Stone(rRx,rRy,i,true,randrockLen);
+					 stones[i]= new Stone((byte) (rRx),(byte) rRy, i,true,(byte) randrockLen);
 					
 					 for(int c=0;c<randrockLen;c++) {
 						 switch(randrockLen) {
-						 case 2 :grid[rRx-c][rRy]="RVS "+i;break;
-						 
-						 case 3 :grid[rRx-c][rRy]="RVL "+i;break;
+						 // short V rocks from -2 - -50
+						 case 2 :grid[rRx-c][rRy]= (byte) (-2-i);break;
+						 // long V rocks from -50 - -127
+						 case 3 :grid[rRx-c][rRy]= (byte) (-50-i);break;
 						 default:System.err.println("wrong Stone length : " + randrockLen);
 						 }
 								
@@ -88,10 +96,12 @@ public class StoneAgeProblem extends Problem {
 				default: System.err.println("random Stone placment is not 0 or 1 :" + randrockPlacment);
 			}
 		}
+			
+			/*
 			for(int i1 =0;i1<grid.length;i1++)
 				for(int j=0;j<grid[0].length;j++)
-					if(grid[i1][j]==null)
-						grid[i1][j]="E";
+					if(grid[i1][j].equals(null))
+						grid[i1][j]=0;*/
 			
 		StoneAgeRunnerState intialState = new StoneAgeRunnerState(grid,pX,pY,stones);
 		System.out.println(intialState.toString());
@@ -100,11 +110,11 @@ public class StoneAgeProblem extends Problem {
 	}
 
 	
-	public StoneAgeRunnerState moveUp(String obj, StoneAgeRunnerState s){
+	public StoneAgeRunnerState moveUp(byte obj, StoneAgeRunnerState s){
 		
 		Point objSP = locateObj(obj,s);
 		
-		String[][]newGrid = new String [s.state.length][s.state[0].length];
+		byte[][]newGrid = new byte [s.state.length][s.state[0].length];
 		for(int i =0;i<newGrid.length;i++)
 			for(int j=0;j<newGrid[0].length;j++)
 				newGrid[i][j]=s.state[i][j];
@@ -116,64 +126,70 @@ for(int i=0;i<stones.length;i++) {
 	Stone t2 = new Stone(t.x, t.y, t.id, t.vertical, t.length);
 	stones[i]=t2;
 }
-		int n = newGrid.length;
-		int m = newGrid[0].length;
+		byte n = (byte) newGrid.length;
+		byte m = (byte) newGrid[0].length;
 		
 
-		String[] objDes=obj.split(" ");
-		String objN=objDes[0];
+		//String[] objDes=obj.split(" ");
+		//String objN=objDes[0];
 		
 		//edge limiters
-		if(objN.equals("RVS")||objN.equals("RVL"))
+		
+		//if(objN.equals("RVS")||objN.equals("RVL")) vertical move up and x is at the top edge 
+		if(obj<-1)
 			if(objSP.x==(n-1)) 
 				return null;
 			
 		
-		if(objN.equals("RHS")||objN.equals("RHL")||objN.equals("plr"))
+		//if(objN.equals("RHS")||objN.equals("RHL")||objN.equals("plr")) horizontal move up and x is at the right edge 
+		if(obj>0)
 			if(objSP.y==(m-1)) 
 				return null;
 		
 		
 		//move function
-		switch(objDes[0]) {
-		case "RVS":
-			if( newGrid[objSP.x+1][objSP.y]=="E") {
-			        newGrid[objSP.x+1][objSP.y]="RVS "+ objDes[1];
-		            newGrid[objSP.x-1][objSP.y]="E";
+		
+		//case "RVS":
+		if(obj<-1 && obj>-50) {
+			if( newGrid[objSP.x+1][objSP.y]==0) {
+			        newGrid[objSP.x+1][objSP.y]=obj;
+		            newGrid[objSP.x-1][objSP.y]=0;
 			}else {return null;}
 		
-			break;
-		case "RVL":
-			if( newGrid[objSP.x+1][objSP.y]=="E") {
-				newGrid[objSP.x+1][objSP.y]="RVL "+ objDes[1];
+	}//case "RVL":
+		else if(obj<=-50) {
+			if( newGrid[objSP.x+1][objSP.y]==0) {
+				newGrid[objSP.x+1][objSP.y]=obj;
 			
-        newGrid[objSP.x-2][objSP.y]="E";
+        newGrid[objSP.x-2][objSP.y]=0;
 			}else {return null;}
-		break;
-		
-		case "RHS":
-			if( newGrid[objSP.x][objSP.y+1]=="E") {
-			newGrid[objSP.x][objSP.y+1]="RHS "+ objDes[1];
-        newGrid[objSP.x][objSP.y-1]="E";	}else {return null;}
-			break;
+		}//case "RHS":
+		else if(obj>1 && obj<50) {
+			if( newGrid[objSP.x][objSP.y+1]==0) {
+			newGrid[objSP.x][objSP.y+1]=obj;
+        newGrid[objSP.x][objSP.y-1]=0;	}else {return null;}
 			
-		case "RHL":if( newGrid[objSP.x][objSP.y+1]=="E") {
-			newGrid[objSP.x][objSP.y+1]="RHL "+ objDes[1];
-        newGrid[objSP.x][objSP.y-2]="E";}else {return null;}
-			break;
+		}	
+		//case "RHL":
+		else if(obj>=50) {
+		if( newGrid[objSP.x][objSP.y+1]==0) {
+			newGrid[objSP.x][objSP.y+1]=obj;
+        newGrid[objSP.x][objSP.y-2]=0;}else {return null;}
 			
-		case "plr":if( newGrid[objSP.x][objSP.y+1]=="E") {
-			newGrid[objSP.x][objSP.y+1]="plr";
-        newGrid[objSP.x][objSP.y-1]="E";
+		}//case "plr":
+		else if(obj == 1)
+		if( newGrid[objSP.x][objSP.y+1]==0) {
+			newGrid[objSP.x][objSP.y+1]=obj;
+        newGrid[objSP.x][objSP.y-1]=0;
         pY+=1;}else {return null;}
-			break;
+			
 		
-		}
+		
 		
 		//stone location update
 		for(Stone st: stones) {
 			
-			if(st.toString().equals(obj)) {
+			if(st.id==obj) {
 				
 				if(st.vertical) {
 					st.x+=1;}
@@ -189,11 +205,11 @@ for(int i=0;i<stones.length;i++) {
 		
 	}
 	
-	public  StoneAgeRunnerState moveDown(String obj, StoneAgeRunnerState s){
+	public  StoneAgeRunnerState moveDown(byte obj, StoneAgeRunnerState s){
 		
 		Point objSP = locateObj(obj,s);
 		
-		String[][]newGrid = new String [s.state.length][s.state[0].length];
+		byte[][]newGrid = new byte [s.state.length][s.state[0].length];
 		for(int i =0;i<newGrid.length;i++)
 			for(int j=0;j<newGrid[0].length;j++)
 				newGrid[i][j]=s.state[i][j];
@@ -210,70 +226,73 @@ for(int i=0;i<stones.length;i++) {
 		int m = newGrid[0].length;
 		
 
-		String[] objDes=obj.split(" ");
-		String objN=objDes[0];
+		//String[] objDes=obj.split(" ");
+		//String objN=objDes[0];
 		
 		//edge limiters
-		if(objN.equals("RVS"))
+		//if(objN.equals("RVS"))
+		if(obj<-1 && obj>-50)
 			if(objSP.x-1==0) 		
 				return null;
 			
-		if(objN.equals("RVL")) 
+		//if(objN.equals("RVL")) 
+		if(obj<=-50)
 			if(objSP.x-2==0) 
 				return null;
 		
 		
-		if(objN.equals("RHS")||objN.equals("plr")) 
+		//if(objN.equals("RHS")||objN.equals("plr")) 
+		if(obj>0 && obj<50)
 			if(objSP.y-1==0) 
 				return null;
 			
 			
 
-		if(objN.equals("RHL"))
+		//if(objN.equals("RHL"))
+		if(obj>=50)
 			if(objSP.y-2==0) 
 				return null;
 			
 		
 		//move function
-		switch(objDes[0]) {
-		case "RVS":
-			if( newGrid[objSP.x-1-1][objSP.y]=="E") {
-			        newGrid[objSP.x-1-1][objSP.y]="RVS "+ objDes[1];
-		            newGrid[objSP.x][objSP.y]="E";
+		//switch(objDes[0]) {
+		//case "RVS":
+		if(obj<-2 && obj> -50) {
+			if( newGrid[objSP.x-1-1][objSP.y]==0) {
+			        newGrid[objSP.x-1-1][objSP.y]=obj;
+		            newGrid[objSP.x][objSP.y]=0;
 			}else {return null;}
-		
-			break;
-		case "RVL":
-			if( newGrid[objSP.x-2-1][objSP.y]=="E") {
-				newGrid[objSP.x-2-1][objSP.y]="RVL "+ objDes[1];
+		}//case "RVL":
+		else if(obj<-50) {
+			if( newGrid[objSP.x-2-1][objSP.y]==0) {
+				newGrid[objSP.x-2-1][objSP.y]=obj;
 			
-        newGrid[objSP.x][objSP.y]="E";
+        newGrid[objSP.x][objSP.y]=0;
 			}else {return null;}
-		break;
-		
-		case "RHS":
-			if( newGrid[objSP.x][objSP.y-1-1]=="E") {
-			newGrid[objSP.x][objSP.y-1-1]="RHS "+ objDes[1];
-        newGrid[objSP.x][objSP.y]="E";	}else {return null;}
-			break;
-			
-		case "RHL":if( newGrid[objSP.x][objSP.y-2-1]=="E") {
-			newGrid[objSP.x][objSP.y-2-1]="RHL "+ objDes[1];
-        newGrid[objSP.x][objSP.y]="E";}else {return null;}
-			break;
-			
-		case "plr":if( newGrid[objSP.x][objSP.y-1-1]=="E") {
-			newGrid[objSP.x][objSP.y-1-1]="plr";
-        newGrid[objSP.x][objSP.y]="E";
+		}//case "RHS":
+		else if(obj>1 && obj<50) {
+			if( newGrid[objSP.x][objSP.y-1-1]==0) {
+			newGrid[objSP.x][objSP.y-1-1]=obj;
+        newGrid[objSP.x][objSP.y]=0;	}else {return null;}
+		}//case "RHL":
+		else if(obj>50) {
+		if( newGrid[objSP.x][objSP.y-2-1]==0) {
+			newGrid[objSP.x][objSP.y-2-1]=obj;
+        newGrid[objSP.x][objSP.y]=0;}else {return null;}
+		}//case "plr":
+		else if(obj==1) {
+		if( newGrid[objSP.x][objSP.y-1-1]==0) {
+			newGrid[objSP.x][objSP.y-1-1]=obj;
+        newGrid[objSP.x][objSP.y]=0;
         pY-=1;}else {return null;}
-			break;
-		
 		}
+		
+		
 		
 		//stone location update
 		for(Stone st: stones) {
 			
-			if(st.toString().equals(obj)) {
+			if(st.id==obj) {
 				
 				if(st.vertical) {
 					st.x-=1;}
@@ -288,15 +307,16 @@ for(int i=0;i<stones.length;i++) {
 		return newState;
 		
 	}
-	public Point locateObj(String obj, StoneAgeRunnerState s) {
+	public Point locateObj(byte obj, StoneAgeRunnerState s) {
 		Stone [] stones = s.stones;
 		
-		String [] objDes = obj.split(" ");
-		if(objDes[0].equals("plr"))
+		//String [] objDes = obj.split(" ");
+		//if player 1
+		if(obj == 1 )
 			return new Point(s.runnerX,s.runnerY);
 		
 		for(int i =0 ;i<stones.length;i++) {
-			if(stones[i].id==Integer.parseInt(objDes[1]))
+			if(stones[i].id==obj)
 				return new Point(stones[i].x,stones[i].y);
 		}
 		return null;
@@ -305,7 +325,7 @@ for(int i=0;i<stones.length;i++) {
 
 	protected int pathCost(String op) {
 		// TODO Auto-generated method stub
-		if(op.equals("moveUp,plr"))
+		if(op.equals("moveUp,plr,1"))
 			return 0;
 		
 		return 2;

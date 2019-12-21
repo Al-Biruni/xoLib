@@ -25,7 +25,7 @@ public class main {
 		 * AS1				As2
 		 */
 		
-		String searchMethod = "AS2";
+		String searchMethod = "G1";
 		 
 		GeneralSearch gs = new GeneralSearch(p,searchMethod);
 		System.out.println("Search using " + searchMethod);
@@ -48,12 +48,12 @@ public class main {
 				}
 				switch(op[0]) {
 				case "moveUp":
-				 sAs = p.moveUp(op[1], sAs);
+				 sAs = p.moveUp((byte)Integer.parseInt(op[2]), sAs);
 				v.setGrid(sAs.state);
 				v.repaint();break;
 				
 				case "moveDown":
-					sAs=p.moveDown(op[1],sAs);
+					sAs=p.moveDown((byte)Integer.parseInt(op[2]),sAs);
 					v.setGrid(sAs.state);
 					v.repaint();break;
 				

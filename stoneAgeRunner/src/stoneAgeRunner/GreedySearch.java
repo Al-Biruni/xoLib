@@ -19,7 +19,7 @@ public class GreedySearch implements Comparator< Node> {
 		//the first greedy function always choose to move the agent first else breadth first 
 		//what if no move up next block is not empty 
 		if(fun1){
-			if(n1.operator.equals("moveUp,plr"))
+			if(n1.operator.equals("moveUp,plr,1"))
 					return -1;
 			
 			
@@ -37,7 +37,7 @@ public class GreedySearch implements Comparator< Node> {
 		//System.out.println(sB);
 			
 			switch(n1.operator){
-			case"moveUp,plr":return -5;
+			case"moveUp,plr,1":return -5;
 			default:if(n1.operator.contains(sB)) {
 			//	System.out.println("Blocking stone " + sB);
 				return -2;

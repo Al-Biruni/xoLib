@@ -13,23 +13,36 @@ import javax.swing.JPanel;
 public class View extends JFrame{
 	
 	JPanel srP;
-	private String[][] grid;
-	public View(String[][] grid) {
+	private byte[][] grid;
+	public View(byte[][] state) {
 		super("StoneAgeRunner");
 		srP = new JPanel();
-		this.setGrid(grid);
+		this.setGrid(state);
 		// GridLayout experimentLayout = new GridLayout(0,2);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLayout(new FlowLayout());
 		srP
-				.setMaximumSize(new Dimension(grid.length, grid[0].length));
-		srP.setLayout(new GridLayout(grid.length, grid[0].length));
-		for (int i = 0; i < grid.length; i++) {
-			for (int j = 0; j < grid[0].length; j++) {
-				JButton t = new JButton(grid[i][j]);
-				srP.add(t);
-
+				.setMaximumSize(new Dimension(state.length, state[0].length));
+		srP.setLayout(new GridLayout(state.length, state[0].length));
+		for (int i = 0; i < state.length; i++) {
+			for (int j = 0; j < state[0].length; j++) {
+				JButton t=null;
+				if(state[i][j]==0) {
+				 t = new JButton("E");
 				
+				}else if(state[i][j]==1) {
+					t = new JButton("plr");
+				}else if(state[i][j]>1 && state[i][j]<50) {
+					t = new JButton("RHS");
+				}else if(state[i][j]>=50) {
+					t = new JButton("RHL");
+				}else if(state[i][j]<-1 && state[i][j]>-50) {
+					t = new JButton("RVS");
+				}else if(state[i][j]<=-50) {
+					t = new JButton("RVL");
+				}
+					
+					srP.add(t);
 			}
 }
 		this.setContentPane(srP);
@@ -45,8 +58,23 @@ public class View extends JFrame{
 		//System.out.println("repainting");
 		for (int i = 0; i < getGrid().length; i++) {
 			for (int j = 0; j < getGrid()[0].length; j++) {
-				JButton t = new JButton(getGrid()[i][j]);
-				srP.add(t);
+				JButton t=null;
+				if(getGrid()[i][j]==0) {
+				 t = new JButton("E");
+				
+				}else if(getGrid()[i][j]==1) {
+					t = new JButton("plr");
+				}else if(getGrid()[i][j]>1 && getGrid()[i][j]<50) {
+					t = new JButton("RHS");
+				}else if(getGrid()[i][j]>=50) {
+					t = new JButton("RHL");
+				}else if(getGrid()[i][j]<-1 && getGrid()[i][j]>-50) {
+					t = new JButton("RVS");
+				}else if(getGrid()[i][j]<=-50) {
+					t = new JButton("RVL");
+				}
+					
+					srP.add(t);
 			}
 			
 		}
@@ -57,11 +85,11 @@ public class View extends JFrame{
 		
 	}
 
-	String[][] getGrid() {
+	byte[][] getGrid() {
 		return grid;
 	}
 
-	void setGrid(String[][] grid) {
-		this.grid = grid;
+	void setGrid(byte[][] state) {
+		this.grid = state;
 	}
 }
