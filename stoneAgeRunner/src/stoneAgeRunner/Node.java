@@ -24,5 +24,14 @@ public class Node {
 		
 	}
 	
+	public String toString() {
+		String s ="";
+		s+="Operator: ";
+		s+=operator;
+		s+=" Depth: ";
+		s+= depth;
+		return s;
+	}
+	
 
 }

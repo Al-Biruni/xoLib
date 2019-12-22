@@ -25,7 +25,7 @@ public class main {
 		 * AS1				As2
 		 */
 		
-		String searchMethod = "G1";
+		String searchMethod = "G2";
 		 
 		GeneralSearch gs = new GeneralSearch(p,searchMethod);
 		System.out.println("Search using " + searchMethod);

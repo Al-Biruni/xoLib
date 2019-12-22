@@ -11,11 +11,11 @@ public class StoneAgeProblem extends Problem {
 	
 	public StoneAgeRunnerState genGrid() {
 		
-		//int n = rand.nextInt(6) + 4;
-		//int m = rand.nextInt(6) + 4;
-		byte n = 7;
-		byte m = 9;
-		double difficulty =0.8;
+		int n = rand.nextInt(5) + 5;
+		int m = rand.nextInt(5) + 5;
+		//byte n = 9;
+		//byte m = 15;
+		double difficulty =0.76;
 		byte[][] grid = new byte[n][m];
 		int rY = rand.nextInt(m - 2) + 1;
 		grid[1][rY]=1;
@@ -332,7 +332,43 @@ for(int i=0;i<stones.length;i++) {
 	}
 
 
+	public void genStateSpace(StoneAgeRunnerState currentState) {
+		this.stateSpace = new HashMap<String, State>();
+		StoneAgeProblem p = new StoneAgeProblem();
+		//move up player id =1
+		StoneAgeRunnerState s = p.moveUp((byte) 1, currentState);
+		if(s!=null)
+			stateSpace.put("moveUp,plr,1", s);
+		// move down player id =1 
+		 s=p.moveDown((byte)1, currentState);
+		if(s!=null)
+			stateSpace.put("moveDown,plr,1", s);
+		
+		for(int i=0;i<currentState.stones.length;i++) {
+			s=null;
+			
+			s = p.moveUp(currentState.stones[i].id, currentState);
+			if(s!=null)
+				stateSpace.put("moveUp,"+currentState.stones[i].toString()+","+currentState.stones[i].id, s);
+		}
+		for(int i=0;i<currentState.stones.length;i++) {
+			s=null;
+			 s = p.moveDown(currentState.stones[i].id, currentState);
+			if(s!=null)
+				stateSpace.put("moveDown,"+currentState.stones[i].toString()+","+currentState.stones[i].id, s);
+			
+		}
 	
+		
+		
+	}
+
+
+	@Override
+	protected void genStateSpace(State s) {
+		 this.genStateSpace((StoneAgeRunnerState)s);
+		
+	}
 	
 	
 }

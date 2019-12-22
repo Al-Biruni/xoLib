@@ -31,19 +31,23 @@ public class GreedySearch implements Comparator< Node> {
 		
 		
 		if(fun2){
+			
+			if(n1.operator.equals("moveUp,plr,1"))
+				return -5;
+			
 			String sB;
 			StoneAgeRunnerState t = ((StoneAgeRunnerState)n1.myState);
 			 sB = t.getblockingStone();
-		//System.out.println(sB);
+	
 			
-			switch(n1.operator){
-			case"moveUp,plr,1":return -5;
-			default:if(n1.operator.contains(sB)) {
-			//	System.out.println("Blocking stone " + sB);
-				return -2;
-			}
-				
-			}
+		
+			 if(n1.operator.contains("moveUp,"+sB)) {
+					//System.out.println(n1.operator);
+				 return -5;
+					 }
+		
+			
+	
 			return n1.depth-n2.depth;
 			}
 			

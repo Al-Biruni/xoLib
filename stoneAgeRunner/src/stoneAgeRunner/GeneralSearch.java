@@ -15,7 +15,8 @@ public  class GeneralSearch {
 	Problem p;
 	Queue<Node> que ;
 	String queF="";
-	ArrayList<String>  seenStates = new ArrayList<String>(); 
+	//ArrayList<String>  seenStates = new ArrayList<String>(); 
+	ArrayList<Integer>  seenStates = new ArrayList<Integer>(); 
 	
 	
 	//static int nEx=0;
@@ -30,11 +31,11 @@ public  class GeneralSearch {
 		Node root = new Node(p.intialState);
 		//define Qing function
 		switch(QingFun){
-		case"BF" : que = new PriorityQueue<Node>(50000000,new BreadthFirst());break;
+		case"BF" : que = new PriorityQueue<Node>(5000000,new BreadthFirst());break;
 		case "DF" :  que = new PriorityQueue<Node>(50000000,new DepthFirst());break;
 		case "UC" :  que = new PriorityQueue<Node>(5000000,new UniformCost());break;
 		case "ID" :que = new PriorityQueue<Node>(5000000,new DepthFirst());break;
-		case"G1": que = new PriorityQueue<Node>(5000000,new GreedySearch(1));break;
+		case"G1": que = new PriorityQueue<Node>(500000,new GreedySearch(1));break;
 		case"G2":que = new PriorityQueue<Node>(50000000,new GreedySearch(2));break;
 		case"AS1":que = new PriorityQueue<Node>(5000000,new AStarSearch(1));break;
 		case"AS2":que = new PriorityQueue<Node>(50000000,new AStarSearch(2));break;
@@ -86,14 +87,16 @@ public String solve() {
 				
 			}else{
 				
-				String hash = cN.myState.hash();
+				//String hash = cN.myState.hash();
+				
 			//	System.out.println(cN.myState.toString());
 			//	System.out.println(hash);
-				if(!seenStates.contains(hash)) {
+				if(!seenStates.contains(cN.myState.hashCode())) {
+					//System.out.println("hash code  "+ cN.myState.hashCode());
 					 genChildren(cN);
 					 mE++;
 					// System.out.println("generated childern");
-					 seenStates.add(hash);
+					 seenStates.add(cN.myState.hashCode());
 				}
 				
 			
@@ -121,12 +124,13 @@ private String neg(String operator) {
 
 private void genChildren(Node N) {
 	//System.out.println(N.operator+ "D "+ N.depth);
-	N.myState.genStateSpace();;
+	p.genStateSpace(N.myState);
+	//N.myState.genStateSpace();
 	
 		
-	for(String op : N.myState.nextStates.keySet()){
+	for(String op : p.stateSpace.keySet()){
 		int cost = N.pathCost + p.pathCost(op);
-		Node child = new Node(N.myState.nextStates.get(op),N,op,N.depth+1,cost);
+		Node child = new Node(p.stateSpace.get(op),N,op,N.depth+1,cost);
 		if(queF.equals("ID")) {
 			
 			if(child.depth<aDepth)
@@ -140,8 +144,9 @@ private void genChildren(Node N) {
 			//if(!negSeenStates.contains(cN.operator)) 
 		      //  negSeenStates.add(negOp);
 			//if(!N.operator.equals(negOp)) {
+			if(!seenStates.contains(child.myState.hashCode())) {
 			que.add(child);
-			qSize++;//}
+			qSize++;}
 			//}else {
 				//que.add(child);
 			//}
