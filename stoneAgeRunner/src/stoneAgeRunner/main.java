@@ -15,6 +15,7 @@ public class main {
 		View v = null ;
 		if(visable)
 		v = new View(p.intialState.state);
+		
 		//p.moveUp("plr", (StoneAgeRunnerState)p.intialState);
 		//p.printGrid(p.intialState.state);
 		
@@ -25,7 +26,7 @@ public class main {
 		 * AS1				As2
 		 */
 		
-		String searchMethod = "G2";
+		String searchMethod = "AS2";
 		 
 		GeneralSearch gs = new GeneralSearch(p,searchMethod);
 		System.out.println("Search using " + searchMethod);

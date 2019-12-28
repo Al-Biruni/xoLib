@@ -64,7 +64,7 @@ public class StoneAgeRunnerState extends State{
 	public int estimateGoal(Boolean fun1) {
 		
 		if(fun1) {
-		int d = this.state[1].length- this.runnerY;
+		int d = this.state[1].length- this.runnerY-1;
 		return d;}
 		if(!fun1) {
 			int ne=0;

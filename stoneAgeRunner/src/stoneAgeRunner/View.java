@@ -33,13 +33,13 @@ public class View extends JFrame{
 				}else if(state[i][j]==1) {
 					t = new JButton("plr");
 				}else if(state[i][j]>1 && state[i][j]<50) {
-					t = new JButton("RHS");
+					t = new JButton("RHS,"+state[i][j]);
 				}else if(state[i][j]>=50) {
-					t = new JButton("RHL");
+					t = new JButton("RHL,"+state[i][j]);
 				}else if(state[i][j]<-1 && state[i][j]>-50) {
-					t = new JButton("RVS");
+					t = new JButton("RVS,"+state[i][j]);
 				}else if(state[i][j]<=-50) {
-					t = new JButton("RVL");
+					t = new JButton("RVL,"+state[i][j]);
 				}
 					
 					srP.add(t);
@@ -65,13 +65,13 @@ public class View extends JFrame{
 				}else if(getGrid()[i][j]==1) {
 					t = new JButton("plr");
 				}else if(getGrid()[i][j]>1 && getGrid()[i][j]<50) {
-					t = new JButton("RHS");
+					t = new JButton("RHS,"+getGrid()[i][j]);
 				}else if(getGrid()[i][j]>=50) {
-					t = new JButton("RHL");
+					t = new JButton("RHL,"+getGrid()[i][j]);
 				}else if(getGrid()[i][j]<-1 && getGrid()[i][j]>-50) {
-					t = new JButton("RVS");
+					t = new JButton("RVS,"+getGrid()[i][j]);
 				}else if(getGrid()[i][j]<=-50) {
-					t = new JButton("RVL");
+					t = new JButton("RVL,"+getGrid()[i][j]);
 				}
 					
 					srP.add(t);

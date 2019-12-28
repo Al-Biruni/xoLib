@@ -22,31 +22,39 @@ public class GreedySearch implements Comparator< Node> {
 			if(n1.operator.equals("moveUp,plr,1"))
 					return -1;
 			
-			
-			//if(n2.operator.equals("MoveUp 0"))
-				//return 1;
 			else
 				return n1.depth-n2.depth;
 		}
 		
 		
 		if(fun2){
-			
-			if(n1.operator.equals("moveUp,plr,1"))
-				return -5;
-			
 			String sB;
 			StoneAgeRunnerState t = ((StoneAgeRunnerState)n1.myState);
 			 sB = t.getblockingStone();
 	
 			
 		
-			 if(n1.operator.contains("moveUp,"+sB)) {
-					//System.out.println(n1.operator);
-				 return -5;
-					 }
-		
+		if(n1.operator.endsWith(sB)) {
+			//System.out.println(sB);
+			//System.out.println(n1.operator);
+			 if(n1.operator.startsWith("moveUp")) {
+				//	System.out.println("Blocking N1 :_______________________ -"+n1);
+				 return -50+n1.depth-n2.depth;
+					 }}
+
+			if(n1.operator.equals("moveUp,plr,1"))
+				return -20+n1.depth-n2.depth;
 			
+		
+			if(n2.operator.equals("moveUp,plr,1"))
+				return 20+n1.depth-n2.depth;
+			if(n2.operator.endsWith(sB)) {
+				//System.out.println(sB);
+				//System.out.println(n2.operator);
+				 if(n2.operator.startsWith("moveUp")) {
+				//	System.out.println("Blocking N2 :_______________________ -"+n2);
+					 return 50+n1.depth-n2.depth;
+						 }}
 	
 			return n1.depth-n2.depth;
 			}
