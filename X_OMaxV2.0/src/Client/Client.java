@@ -1,3 +1,10 @@
+package Client;
+
+import Commons.Message.Message;
+import Commons.Message.MessageType;
+import Commons.User;
+import View.X_O;
+
 import java.io.BufferedReader;
 
 import java.io.EOFException;
@@ -17,7 +24,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
-import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -81,7 +87,7 @@ public class Client implements ClientListener {
 
 						if (receivedMsg != null)
 						if(receivedMsg.TTL>0){
-							System.out.println("Client recived : \n" + receivedMsg.toString());
+							System.out.println("Client.Client recived : \n" + receivedMsg.toString());
 							switch (receivedMsg.messageType) {
 
 							case PUBLIC:

@@ -1,13 +1,21 @@
 package SlaveServer;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClientConnectionHandler extends Thread {
+public class ClientConnectionThread extends Thread {
 
-    Server server;
-    public ClientConnectionHandler(Server server){
-        this.server=server;
+    protected Socket newClientS;
+    protected ServerSocket mySocket;
+    protected ClientThread[] activeClients ;
+    protected int clientsNum=0;
+
+
+    public ClientConnectionThread(int clientPort, int maxClients) throws IOException {
+        activeClients = new ClientThread[maxClients];
+        mySocket = new ServerSocket(clientPort);
+        newClientS = new Socket();
     }
 
 
@@ -15,18 +23,18 @@ public class ClientConnectionHandler extends Thread {
             while (true) {
 
                 try {
-                    server.newClientS = server.mySocket.accept();
+                    newClientS = mySocket.accept();
                 } catch (IOException e) {
                     System.err.println("Client.Client Socket Error while accepting ");
                     e.printStackTrace();
                 }
-                if (server.newClientS != null) {
+                if (newClientS != null) {
 
                     System.out.println("COnnecting creating new THread");
-                    server.activeClients[server.clientsNum] = new ClientThread(server,server.clientsNum, server.newClientS);
-                    server.activeClients[server.clientsNum].start();
-                    server.clientsNum++;
-                    server.newClientS = new Socket();
+                    activeClients[clientsNum] = new ClientThread(server,clientsNum, server.newClientS);
+                    activeClients[clientsNum].start();
+                    clientsNum++;
+                    newClientS = new Socket();
 
                 }
 

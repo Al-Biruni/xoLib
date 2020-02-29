@@ -1,4 +1,9 @@
-import java.awt.Container;
+package View;
+
+import Client.*;
+import Commons.Message.Message;
+import Commons.User;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -31,15 +36,15 @@ public class X_O extends JFrame implements ListSelectionListener {
 	public JButton btnSend;
 	public JButton checkUsrBtn;
 	private Client cl;
-	JDialog userReg;
-	JList onUsr ;
-	JList list;
+	public JDialog userReg;
+	public JList onUsr ;
+	public JList list;
     public DefaultListModel<User> listModel;
     JScrollPane listScrollPane;
 	JFrame chatView = new JFrame();
 
 	public X_O(ClientListener cl)  {
-		super("X_O");
+		super("View.X_O");
 		
 		this.cl = (Client) cl;
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -113,7 +118,7 @@ userReg.setVisible(true);
 		 
 		 
 		    msgText = new JTextField();
-		    msgText.setText("Enter Message");
+		    msgText.setText("Enter Commons.Message.Message.Commons.Message.Message");
 		    
 			
 			GridBagConstraints gbc_msgText = new GridBagConstraints();

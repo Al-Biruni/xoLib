@@ -7,10 +7,10 @@ import Commons.User;
 import java.io.EOFException;
 import java.io.IOException;
 
-public class MasterHandlerThread extends Thread {
+public class MasterConnectionHandler extends Thread {
     Server server;
 
-    public MasterHandlerThread(Server server) {
+    public MasterConnectionHandler(Server server) {
         this.server = server;
 
     }

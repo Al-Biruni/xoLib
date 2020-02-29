@@ -1,3 +1,4 @@
+package Client;
 
 public interface ClientListener {
 public void onSend();
