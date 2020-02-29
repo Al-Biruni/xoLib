@@ -31,7 +31,7 @@ public class Server {
 	public static PublicKey pbKey;
 	protected static PrivateKey prKey;
 	protected Signature rsa;
-	Thread masterHandler, serverConnector, updateActiveUsers;
+	Thread serverConnector, updateActiveUsers;
 
 	protected ClientThread[] activeClients = new ClientThread[maxClients];
 
@@ -89,104 +89,8 @@ public class Server {
 			}
 		};
 
-		masterHandler = new Thread() {
+MasterHandlerThread masterHandler = new MasterHandlerThread(this);
 
-			public void run() {
-				Message masterReq;
-				while (true) {
-
-					try {// check for master
-						masterReq = (Message) mI.readObject();
-						if (masterReq != null)
-							if (masterReq.TTL > 0) {
-
-								System.out.println("MAster Server request: " + masterReq.toString());
-
-								switch (masterReq.messageType) {
-
-								case GETALLUSERS:
-									User[] ut = getActiveUsers();
-									Message mReply = new Message(serverUser, masterReq.receiver,"",MessageType.ONLINEUSERS);
-									mReply.users=ut;
-									// mReply.receiver = masterReq.receiver;
-									sendToMaster(mReply);
-									break;
-
-								case ONLINEUSERS:
-									for (ClientThread ct : activeClients)
-										if (ct != null)
-											if(ct.cUser!=null)// didnt finisht registration yet 
-											if (masterReq.receiver.userName.equals(ct.cUser.userName))
-												ct.sendToClient(masterReq);
-									System.out.println("Se3nding mebers LIst to client " + masterReq.sender.userName);
-									break;
-								case PRIVATE:
-									sendPrivateMsg(masterReq);
-									break;
-								case PUBLIC:
-									sendToAll(masterReq);
-									break;
-								case REGISTER:
-									if(masterReq.msgBody.equals("true")) {
-										register(masterReq.users[0],masterReq.receiver);
-										
-										for(ClientThread ct : activeClients) {
-											if(ct!=null) {
-												if(ct.cUser!=null)
-											if(ct.cUser.userName.equals(masterReq.receiver.userName)){
-												ct.sendToClient(masterReq);
-												
-												
-											}else {
-												ct.sendToClient( new Message(serverUser,masterReq.receiver,"",MessageType.NEWUSER));
-											}
-											}
-										}
-										
-										
-									}else {
-										//the registration process is made with a temp user created with the client number
-										//so we can communicate with the registering user without having a duplicated name we save the temp user in User[0] we manipulated this for less variables this isnt the intended use  
-										for(ClientThread ct : activeClients) {
-											if(ct!=null)
-											if(ct.cUser.userName.equals(masterReq.users[0].userName)){
-												ct.sendToClient(masterReq);
-												
-												
-											}
-										}
-										
-									}
-									;break;
-								case LOGOUT:sendToAll(masterReq);
-								default:
-									System.out.println("Default Master case " + masterReq);
-									break;
-
-								}
-
-							}
-					} catch (EOFException e) {
-
-						continue;
-
-					} catch (IOException | ClassNotFoundException e) {
-
-						e.printStackTrace();
-
-						// ResetMasterConnection();
-
-					}
-				}
-			}
-		};
-		/*
-		 * updateActiveUsers = new Thread() { public void run() { while(true) {
-		 * 
-		 * } }
-		 * 
-		 * };
-		 */
 		serverConnector.start();
 		masterHandler.start();
 	}
@@ -207,7 +111,7 @@ public class Server {
 		
 	}
 
-	private synchronized void sendToMaster(Message msg) {
+	synchronized void sendToMaster(Message msg) {
 
 		msg.decTTL();
 		try {
@@ -220,7 +124,7 @@ public class Server {
 
 	}
 
-	private void sendPrivateMsg(Message masterReq) {
+	void sendPrivateMsg(Message masterReq) {
 
 		synchronized (this) {
 
@@ -233,7 +137,7 @@ public class Server {
 
 	}
 
-	private void sendToAll(Message masterReq) {
+	void sendToAll(Message masterReq) {
 
 		synchronized (this) {
 			for (ClientThread ct : activeClients) {
@@ -248,7 +152,7 @@ public class Server {
 //----------------------------Helpers-------------------------------------------------------------------	
 // 
  
-	private User[] getActiveUsers() {
+	User[] getActiveUsers() {
 		System.out.println("Server getting active users");
 
 		User[] users = new User[clientsNum + 1];
@@ -420,7 +324,7 @@ public class Server {
 		}
 
 //---------------------------------------helper ----------------------------------------------------------
-		private void sendToClient(Message msg) {
+void sendToClient(Message msg) {
 			System.out.println("Sending to cliend \n " + msg.toString());
 			Message m = new Message(msg);
 			m.decTTL();

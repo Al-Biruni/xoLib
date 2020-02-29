@@ -132,7 +132,6 @@ public class MasterServer {
 
 			try {
 				this.mO = new ObjectOutputStream(mySocket.getOutputStream());
-
 				this.mI = new ObjectInputStream(mySocket.getInputStream());
 
 			} catch (Exception e) {
@@ -244,7 +243,6 @@ public class MasterServer {
 				for (int i=0;i<serverThreads.length;i++)
 					if (serverThreads[i] != null)
 						if(serverThreads[i]!=this)
-
 							serverThreads[i].sendToServer(msg);
 
 			
