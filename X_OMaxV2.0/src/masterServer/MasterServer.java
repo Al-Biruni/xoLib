@@ -1,4 +1,4 @@
-package MasterServer;
+package masterServer;
 
 import Commons.User;
 
@@ -59,7 +59,7 @@ public class MasterServer {
 
 	public void run() throws IOException {
 
-		MasterServerConnectionHandler acceptConnection = new MasterServerConnectionHandler(this);
+		MasterServerConnectionListener acceptConnection = new MasterServerConnectionListener(this);
 		acceptConnection.start();
 	}
 	

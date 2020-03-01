@@ -1,4 +1,4 @@
-package MasterServer;
+package masterServer;
 
 import Commons.Message.Message;
 import Commons.Message.MessageType;

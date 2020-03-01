@@ -1,12 +1,12 @@
-package MasterServer;
+package masterServer;
 
 import java.io.IOException;
 import java.net.Socket;
 
-public class MasterServerConnectionHandler extends Thread {
+public class MasterServerConnectionListener extends Thread {
     MasterServer masterServer;
 
-public MasterServerConnectionHandler(MasterServer masterServer){
+public MasterServerConnectionListener(MasterServer masterServer){
     this.masterServer = masterServer;
 
 }

@@ -20,14 +20,13 @@ class ClientThread extends Thread {
     protected Boolean active = true;
 
     protected User cUser;
+    ClientsConnections clientsConnections;
 // -------------------------------constructor------------------------------------------------
 
-    public ClientThread(int cNum, Socket myCS) {
+    public ClientThread(ClientsConnections clientsConnections, int cNum, Socket myCS) {
         this.clientNumber = cNum;
-
-
+        this.clientsConnections = clientsConnections;
         try {
-
             mySocket = myCS;
             output = new ObjectOutputStream(myCS.getOutputStream());
             input = new ObjectInputStream(myCS.getInputStream());
@@ -61,15 +60,15 @@ class ClientThread extends Thread {
                                 MessageType mt = receivedMsg.messageType;
                                 switch (mt) {
                                     case PUBLIC:
-                                        server.sendToAll(receivedMsg);
+                                        clientsConnections.sendToAll(receivedMsg);
 
-                                        server.masterConnection.sendToMaster(receivedMsg);
+                                        clientsConnections.sendToMaster(receivedMsg);
 
                                         break;
                                     case PRIVATE:
-                                        ClientThread pu = server.find(receivedMsg.receiver);
+                                        ClientThread pu = clientsConnections.find(receivedMsg.receiver);
                                         if (pu == null) {
-                                            server.masterConnection.sendToMaster(receivedMsg);
+                                            clientsConnections.sendToMaster(receivedMsg);
 
                                         } else {
                                             pu.sendToClient(receivedMsg);
@@ -77,26 +76,27 @@ class ClientThread extends Thread {
                                         break;
                                     case GETALLUSERS:
 
-                                        Message m = new Message( server.serverUser,receivedMsg.sender,"", MessageType.GETALLUSERS);
-                                        server.masterConnection.sendToMaster(m);
+                                        Message m = new Message(clientsConnections.getServerUser(), receivedMsg.sender, "", MessageType.GETALLUSERS);
+                                        clientsConnections.sendToMaster(m);
                                         break;
 
                                     case REGISTER:
 
 
-
-
-                                        String cn = "";cn+=clientNumber;
-                                        cUser= new User(cn,null);
+                                        String cn = "";
+                                        cn += clientNumber;
+                                        cUser = new User(cn, null);
                                         //cUser.userName=cn;
                                         receivedMsg.users = new User[1];
-                                        receivedMsg.users[0]=cUser;
-                                        receivedMsg.TTL=4;
-                                        server.masterConnection.sendToMaster(receivedMsg);
+                                        receivedMsg.users[0] = cUser;
+                                        receivedMsg.TTL = 4;
+                                        clientsConnections.sendToMaster(receivedMsg);
                                         break;
 
 
-                                    case LOGOUT:close();break;
+                                    case LOGOUT:
+                                        close();
+                                        break;
 
 
                                     default:
@@ -143,36 +143,32 @@ class ClientThread extends Thread {
 
     }
 
-    public synchronized void close() {
-        Message m =new Message(server.serverUser,null,cUser.userName,MessageType.LOGOUT);
+    public void close() {
+        Message m = new Message(clientsConnections.getServerUser(), null, cUser.userName, MessageType.LOGOUT);
 
-        if (mySocket != null) {
+
             try {
-                this.input.close();
-                this.output.close();
-                this.mySocket.close();
+
+                    this.input.close();
+                    this.output.close();
+                    this.mySocket.close();
 
 
 
-                for (int i=0;i< server.activeClients.length;i++)
-                    if (server.activeClients[i] == this) {
-                        System.out.println("Client " + server.activeClients[i].cUser.userName + " log out");
-                        server.activeClients[i] = null;
-                        break;
-                    }
 
-                server.clientsNum--;
-                active = false;
-
-                server.masterConnection.sendToMaster(m);
-                server.sendToAll(m);
 
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+            }finally {
+                clientsConnections.close(this);
+                clientsConnections.sendToMaster(m);
+                clientsConnections.sendToAll(m);
+                active = false;
+
             }
 
-        }
+
     }
 
 }
