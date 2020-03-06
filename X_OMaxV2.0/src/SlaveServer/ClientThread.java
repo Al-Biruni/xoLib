@@ -51,10 +51,10 @@ class ClientThread extends Thread {
                 while (active) {
 
                     try {
-                        // TODO Auto-generated constructor stub
                         receivedMsg = (Message) input.readObject();
                         if (receivedMsg != null)
                             if (receivedMsg.TTL > 0) {
+
                                 System.out.println("SlaveServer.Server Received: \n" + receivedMsg);
 
                                 MessageType mt = receivedMsg.messageType;

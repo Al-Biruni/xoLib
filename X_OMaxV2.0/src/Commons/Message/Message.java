@@ -4,22 +4,21 @@ import Commons.User;
 
 import java.io.Serializable;
 
-public class Message implements Serializable  {
-	/**
-	 * 
-	 */
+public class Message implements Serializable MasterHandler ServerHandler ClientHandler {
+
 	private static final long serialVersionUID = 2976187782154270436L;
 	public User sender=null,receiver=null;
 	
 
-	
 	public String msgBody="";
+
+
+
 	public User[] users;
-	public byte[] enMsg;
-	public byte[] key;
-	public byte[]iv;
+
 	public int TTL=4;
 	public MessageType messageType;
+
 	
 	
 	public Message(User s, User r, String msg, MessageType msgType) {
@@ -29,7 +28,7 @@ public class Message implements Serializable  {
 		this.messageType=msgType;
 	}
 	
-	public Message(User s, String msg) {
+	public Message(User s, String msg){
 		this.sender=s;
 		this.msgBody=msg;
 		this.messageType=messageType.PUBLIC;
@@ -63,7 +62,7 @@ public class Message implements Serializable  {
 		m+= "Reciever: "+receiver.userName;
 	
 		
-				m+= "\nMsgbody: "+msgBody+"\nCommons.Message.Message.Commons.Message.Message type: "+messageType;
+				m+= "\nMsgbody: "+msgBody+"\n Message type: "+messageType;
 				m+="\n TTL: "+TTL;
 		return m;
 		

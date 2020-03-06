@@ -30,4 +30,7 @@ public class SecretUser extends User {
         throw new Exception("Couldn't intialize keys");
     }
 
+    public Byte[] signKey(){
+
+    }
 }

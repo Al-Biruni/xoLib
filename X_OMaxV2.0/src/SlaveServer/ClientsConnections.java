@@ -21,6 +21,7 @@ public class ClientsConnections {
         for (int i = 0; i < activeClients.length; i++)
             if (activeClients[i] == null) {
                 activeClients[i] = new ClientThread(this, clientsNum, newClientSocket);
+                activeClients[i].start();
                 clientsNum++;
                 break;
             }

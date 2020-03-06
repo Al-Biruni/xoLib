@@ -113,11 +113,8 @@ public class Client implements ClientListener {
 
 										win.userReg.setVisible(false);
 										win.chatView();
-										//win.chatView.setVisible(true);
 
-										// server = receivedMsg.sender;
 										Message getMembers = new Message(user, server, "", MessageType.GETALLUSERS);
-										// getMembers.sender=user;
 										sendMessage(getMembers);
 
 									} else {
@@ -206,7 +203,6 @@ public class Client implements ClientListener {
 		try {
 
 			KeyGenerator kgen = KeyGenerator.getInstance("AES");
-			
 			SecretKey skey = kgen.generateKey();
 			Cipher ci = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			ci.init(Cipher.ENCRYPT_MODE, skey, ivspec);

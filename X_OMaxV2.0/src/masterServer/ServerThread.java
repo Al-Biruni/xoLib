@@ -29,6 +29,7 @@ class ServerThread extends Thread {
             this.mI = new ObjectInputStream(mySocket.getInputStream());
 
         } catch (Exception e) {
+            System.err.println("Server connection error with master");
             e.printStackTrace();
             //closeThread();
         }
