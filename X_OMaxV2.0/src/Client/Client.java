@@ -1,7 +1,9 @@
 package Client;
 
+import Commons.Exceptions.MessageCouldnotBeEncryptedException;
 import Commons.Message.Message;
 import Commons.Message.MessageType;
+import Commons.SecretUser;
 import Commons.User;
 import View.X_O;
 
@@ -49,10 +51,7 @@ public class Client implements ClientListener {
 	private static X_O win;
 	protected static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
-	public PublicKey pbKey;
-	protected PrivateKey prKey;
-	protected Signature rsa;
-	protected User user;
+	protected SecretUser user;
 	protected User[] knownActiveUsers;
 
 	public Client() {
@@ -191,54 +190,45 @@ public class Client implements ClientListener {
 	}
 
 	// ----------------------------------Encryption handlers----------------------------------------------
-	public void encrypt(Message msg) {
+	public void encrypt(Message msg) throws MessageCouldnotBeEncryptedException {
 
 		Cipher cipher;
 		byte[] iv = new byte[128/8];
 		SecureRandom srandom = new SecureRandom();
 		srandom.nextBytes(iv);
 		IvParameterSpec ivspec = new IvParameterSpec(iv);
-		
+
 
 		try {
-
+//encrypt msg body with radom key and iv
 			KeyGenerator kgen = KeyGenerator.getInstance("AES");
 			SecretKey skey = kgen.generateKey();
 			Cipher ci = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			ci.init(Cipher.ENCRYPT_MODE, skey, ivspec);
 			byte[] encryptedtext = ci.doFinal(msg.msgBody.getBytes("UTF-8"));
-			
+
 			cipher = Cipher.getInstance("RSA");
 			cipher.init(Cipher.ENCRYPT_MODE, msg.receiver.pk);
+			//encrypt key with reciver public key to make sure that the reciver is the only one can read it
 
-			byte[] encryptedKey = cipher.doFinal(skey.getEncoded());
+			byte[] encryptedKey =
+					cipher.doFinal(skey.getEncoded());
 			byte[] encryptedIV = cipher.doFinal(iv);
+			//sign the key with my private key so the reciver be sure that i was the source
+			encryptedKey = user.sign(encryptedKey);
+			encryptedIV = user.sign(encryptedIV);
+
 			 msg.enMsg=encryptedtext;
 			 msg.key=encryptedKey;
 			 msg.iv=encryptedIV;
 			 msg.msgBody="";
-		
-			
-		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidAlgorithmParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+
+		} catch (Exception e) {
+
+			throw new MessageCouldnotBeEncryptedException(e);
 		}
-		
+
 
 		// encryptedtext = new String(encrypted);
 
@@ -248,20 +238,20 @@ public class Client implements ClientListener {
 		Cipher cipher;
 		try {
 			cipher = Cipher.getInstance("RSA");
-			//make sure it is only read by  me 
+			//make sure it is only read by  me
 			cipher.init(Cipher.DECRYPT_MODE, this.prKey);
 
 			byte[] key = cipher.doFinal(msg.key);
 			byte[] iv = cipher.doFinal(msg.iv);
 			IvParameterSpec ivspec = new IvParameterSpec(iv);
-			
+
 			SecretKey skey = new SecretKeySpec(key,"AES");
 			Cipher ci = Cipher.getInstance("AES/CBC/PKCS5Padding");
-			
+
 			ci.init(Cipher.DECRYPT_MODE, skey, ivspec);
-			
+
 			byte[] dB = ci.doFinal(msg.enMsg);
-		
+
 			String msgText = new String(dB);
 			return msgText;
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {

@@ -1,6 +1,12 @@
 package Commons;
 
 
+import Commons.Exceptions.MessageCouldnotBeEncryptedException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.security.*;
 
@@ -30,7 +36,16 @@ public class SecretUser extends User {
         throw new Exception("Couldn't intialize keys");
     }
 
-    public Byte[] signKey(){
+    public byte[] sign(byte[] plainBytes) throws Exception {
+
+
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, prKey);
+            return cipher.doFinal(plainBytes);
+        } catch (Exception e) {
+            throw  new MessageCouldnotBeEncryptedException(e);
+        }
 
     }
 }

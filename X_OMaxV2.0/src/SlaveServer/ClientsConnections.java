@@ -9,19 +9,22 @@ import java.net.Socket;
 public class ClientsConnections {
     protected Server server;
     protected int clientsNum = 0;
+    protected ClientThread[] maxThreadPool;
     protected ClientThread[] activeClients;
+    boolean dirty = true;
 
     public ClientsConnections(Server server) {
         this.server = server;
-        activeClients = new ClientThread[server.maxClients];
+        maxThreadPool = new ClientThread[server.maxClients];
     }
 
     synchronized void addNewClient(Socket newClientSocket) {
+        dirty = true;
 
-        for (int i = 0; i < activeClients.length; i++)
-            if (activeClients[i] == null) {
-                activeClients[i] = new ClientThread(this, clientsNum, newClientSocket);
-                activeClients[i].start();
+        for (int i = 0; i < maxThreadPool.length; i++)
+            if (maxThreadPool[i] == null) {
+                maxThreadPool[i] = new ClientThread(this, clientsNum, newClientSocket);
+                maxThreadPool[i].start();
                 clientsNum++;
                 break;
             }
@@ -29,7 +32,7 @@ public class ClientsConnections {
     }
 
     synchronized void sendPrivateMsg(Message msg) {
-        for (ClientThread ct : activeClients) {
+        for (ClientThread ct : maxThreadPool) {
             if (ct != null)
                 if (ct.cUser.userName.equals(msg.receiver.userName))
                     ct.sendToClient(msg);
@@ -37,7 +40,7 @@ public class ClientsConnections {
     }
 
     synchronized void sendToAll(Message msg) {
-        for (ClientThread ct : activeClients) {
+        for (ClientThread ct : maxThreadPool) {
             if (ct != null)
                 if (ct.cUser != null)//didnt finish registration yet
                     ct.sendToClient(msg);
@@ -47,11 +50,11 @@ public class ClientsConnections {
     }
 
     synchronized void register(User temp, User regUsr) {
-        for (int i = 0; i < activeClients.length; i++)
-            if (activeClients[i] != null)
-                if (activeClients[i].cUser != null)
-                    if (activeClients[i].cUser.userName.equals(temp.userName)) {
-                        activeClients[i].cUser = regUsr;
+        for (int i = 0; i < maxThreadPool.length; i++)
+            if (maxThreadPool[i] != null)
+                if (maxThreadPool[i].cUser != null)
+                    if (maxThreadPool[i].cUser.userName.equals(temp.userName)) {
+                        maxThreadPool[i].cUser = regUsr;
                         break;
 
                     }
@@ -61,8 +64,7 @@ public class ClientsConnections {
 
     synchronized ClientThread find(User receiver) {
 
-        for (ClientThread ct : activeClients) {
-            if (ct != null)
+        for (ClientThread ct : getActiveClients()) {
                 if (ct.cUser.userName.equals(receiver.userName))
                     return ct;
         }
@@ -75,15 +77,20 @@ public class ClientsConnections {
     }
 
     synchronized ClientThread[] getActiveClients() {
+        if(!dirty)
+            return activeClients;
+
         ClientThread[] cts = new ClientThread[clientsNum];
         int i = 0, c = 0;
         while (i < clientsNum) {
-            if (activeClients[c] != null) {
-                cts[i] = activeClients[c];
+            if (maxThreadPool[c] != null) {
+                cts[i] = maxThreadPool[c];
                 i++;
             }
             c++;
         }
+        dirty = false;
+        activeClients = cts;
         return cts;
 
     }
@@ -93,11 +100,12 @@ public class ClientsConnections {
     }
 
     public void close(ClientThread clientThread) {
+        dirty=true;
 
-        for (int i=0;i< activeClients.length;i++)
-            if (activeClients[i] == clientThread) {
-                System.out.println("Client " + activeClients[i].cUser.userName + " log out");
-                activeClients[i] = null;
+        for (int i = 0; i< maxThreadPool.length; i++)
+            if (maxThreadPool[i] == clientThread) {
+                System.out.println("Client " + maxThreadPool[i].cUser.userName + " log out");
+                maxThreadPool[i] = null;
                 clientsNum--;
                 break;
             }

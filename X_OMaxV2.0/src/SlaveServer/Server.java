@@ -6,6 +6,7 @@ import Commons.*;
 import java.io.IOException;
 
 public class Server {
+    String masterIP = "localhost";
     int masterPort = 6500;
     int clientPort = 6000;
 
@@ -18,8 +19,9 @@ public class Server {
 
     public Server() {
         try {
-            masterConnection = new SlaveServer.MasterConnection(this);
-            clientsConnections = new SlaveServer.ClientsConnections(this);
+
+            masterConnection = new MasterConnection(masterIP,masterPort);
+            clientsConnections = new ClientsConnections(this);
 
             System.out.println(
                     "Connected to Master Server on port " + masterPort + "Waiting for clients on port " + clientPort);
@@ -32,8 +34,8 @@ public class Server {
 
     private void run() throws IOException {
 
-        SlaveServer.ClientConnectionListener clientConnector = new ClientConnectionListener(clientPort, clientsConnections);
-        MasterRequestHandler masterConnector = new MasterRequestHandler(masterConnection);
+        ClientConnectionListener clientConnector = new ClientConnectionListener(clientPort, clientsConnections);
+        MasterRequestListener masterConnector = new MasterRequestListener(masterConnection.getInputStream());
 
         clientConnector.start();
         masterConnector.start();
@@ -54,6 +56,7 @@ public class Server {
 
 
     public User getUser() {
-        return new User(serverUser.userName,serverUser.pk);
+        return  serverUser;
+        //return new User(serverUser.userName,serverUser.pk);
     }
 }

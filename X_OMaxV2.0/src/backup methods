@@ -1,0 +1,44 @@
+/*
+    User[] getActiveUsers() {
+        System.out.println("SlaveServer.Server getting active users");
+
+        User[] users = new User[clientsNum + 1];
+        int i = 0;
+        for (ClientThread ct : activeClients) {
+            if (ct != null) {
+                users[i] = ct.cUser;
+                i++;
+            }
+        }
+        return users;
+    }*/
+
+     /*  case GETALLUSERS:
+                                    User[] ut = server.getActiveUsers();
+                                    Message mReply = new Message(server.serverUser, masterReq.receiver, "", MessageType.ONLINEUSERS);
+                                    mReply.users = ut;
+                                    // mReply.receiver = masterReq.receiver;
+                                    server.sendToMaster(mReply);
+                                    break;
+
+
+                                    ---------------------------------
+                                        public void sendPrivateMsg(Message masterReq) {
+                                            server.clientsConnections.sendPrivateMsg(masterReq);
+                                        }
+
+                                        public void sendToAll(Message masterReq) {
+                                            server.clientsConnections.sendToAll(masterReq);
+                                        }
+
+                                        public void register(User user, User receiver) {
+                                            server.clientsConnections.register(user,receiver);
+                                        }
+
+                                        public ClientThread[] getActiveClients() {
+                                            return  server.clientsConnections.getActiveClients();
+                                        }
+
+                                        public User getServerUser() {
+                                            return server.getUser();
+                                        }

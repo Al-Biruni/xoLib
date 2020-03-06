@@ -1,5 +1,6 @@
 package Commons.Message;
 
+import Commons.SecretUser;
 import Commons.User;
 
 import java.io.Serializable;
@@ -23,6 +24,7 @@ public class Message implements Serializable MasterHandler ServerHandler ClientH
 	
 	public Message(User s, User r, String msg, MessageType msgType) {
 		this.sender=s;
+
 		this.receiver=r;
 		this.msgBody=msg;
 		this.messageType=msgType;
