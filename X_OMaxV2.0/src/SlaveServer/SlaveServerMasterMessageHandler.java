@@ -3,50 +3,44 @@ package SlaveServer;
 import Commons.Message.Message;
 import Commons.Message.MessageType;
 import Commons.Message.MessageHandler;
+import Commons.User;
 
 public class SlaveServerMasterMessageHandler implements MessageHandler {
 
-    public SlaveServerMasterMessageHandler(){
+    ClientsConnectionsManager clientsConnectionsManager;
+    User serverUser;
+
+    public SlaveServerMasterMessageHandler(User serverUser, ClientsConnectionsManager clientsConnectionsManager, MasterConnectionManger masterConnectionManger){
+        this.clientsConnectionsManager = clientsConnectionsManager;
+        this.serverUser = serverUser;
 
 
     }
 
 
+    @Override
+    public void sendToAll(Message message) {
+        clientsConnectionsManager.sendToAll(message);
+    }
 
-    public void handelMessage(Message masterReq) {
+    @Override
+    public void logout(Message msg) {
+        sendToAll(msg);
+    }
 
+    @Override
+    public void getAllUsers(Message msg) {
+        sendToAll(msg);
+    }
 
-            switch (masterReq.messageType) {
-
-
-                case ONLINEUSERS:
-                    onlineUsersRequest(masterReq);
-
-                    break;
-                case PRIVATE:
-                    sendPrivateMessage(masterReq);
-                    break;
-                case PUBLIC:
-                    sendToAll(masterReq);
-                    break;
-                case REGISTER:
-                    registerRequest(masterReq);
-                    break;
-                case LOGOUT:
-                    sendToAll(masterReq);
-                default:
-                    System.out.println("Default Master case " + masterReq);
-                    break;
-
-            }
+    @Override
+    public void newUser(Message msg) {
+sendToAll(msg);
+    }
 
 
-        }
-
-
-
-
-    private void registerRequest(Message masterReq) {
+    @Override
+    public void register(Message masterReq) {
         if (masterReq.msgBody.equals("true")) {
             uniqueName(masterReq);
 
@@ -55,16 +49,30 @@ public class SlaveServerMasterMessageHandler implements MessageHandler {
         }
     }
 
+    @Override
+    public void publicMessage(Message masterReq) {
+        clientsConnectionsManager.sendToAll(masterReq);
+
+    }
+
+    //send requests to master
+    @Override
+    public void privateMessage(Message masterReq) {
+        clientsConnectionsManager.sendPrivateMsg(masterReq);
+    }
+
 
     private void uniqueName(Message masterReq) {
-        masterConnection.register(masterReq.users[0], masterReq.receiver);
+        clientsConnectionsManager.register(masterReq.users[0], masterReq.receiver);
 
-        for (ClientThread ct : masterConnection.getActiveClients()) {
+        for (ClientThread ct : clientsConnectionsManager.maxThreadPool) {
+            if(ct!=null)
+                if(ct.cUser!=null)
             if (ct.cUser.userName.equals(masterReq.receiver.userName)) {
                 ct.sendToClient(masterReq);
 
             } else {
-                ct.sendToClient(new Message(masterConnection.getServerUser(), masterReq.receiver, "", MessageType.NEWUSER));
+                ct.sendToClient(new Message(serverUser, masterReq.receiver, "", MessageType.NEWUSER));
             }
 
         }
@@ -74,33 +82,23 @@ public class SlaveServerMasterMessageHandler implements MessageHandler {
         //the registration process is made with a temp user created with the client number
         //so we can communicate with the registering user without having a duplicated name
         // we save the temp user in User[0] we manipulated this for less variables this isnt the intended use
-        for (ClientThread ct : masterConnection.getActiveClients()) {
+        for (ClientThread ct : clientsConnectionsManager.maxThreadPool) {
+            if(ct!=null)
+                if(ct.cUser!=null)
             if (ct.cUser.userName.equals(masterReq.users[0].userName)) {
                 ct.sendToClient(masterReq);
-
 
             }
         }
     }
 
-    private void onlineUsersRequest(Message masterReq) {
-        for (ClientThread ct : masterConnection.getActiveClients())
+
+    public void onlineUsersRequest(Message masterReq) {
+        for (ClientThread ct : clientsConnectionsManager.getActiveClients())
             if (ct.cUser != null)// didn't finish registration yet
                 if (masterReq.receiver.userName.equals(ct.cUser.userName))
                     ct.sendToClient(masterReq);
         System.out.println("Se3nding members LIst to client " + masterReq.sender.userName);
-    }
-
-
-
-    @Override
-    public void sendPublicMessage(Message masterReq) {
-
-    }
-
-    @Override
-    public void sendPrivateMessage(Message masterReq) {
-
     }
 
 }

@@ -1,7 +1,9 @@
 package Client;
 
+import Commons.Exceptions.MessageCouldnotBeEncryptedException;
+
 public interface ClientListener {
-public void onSend();
+ void onSend() throws MessageCouldnotBeEncryptedException;
 void Register(String userName);
 
 

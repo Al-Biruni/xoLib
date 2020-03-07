@@ -1,6 +1,7 @@
 package masterServer;
 
 import Commons.Message.Message;
+import Commons.Message.MessageHandler;
 import Commons.Message.MessageType;
 import Commons.User;
 
@@ -10,7 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-class ServerThread extends Thread {
+class ServerThread extends Thread implements MessageHandler {
     protected int serverNumber;
     protected Socket mySocket;
     protected ObjectOutputStream mO;
@@ -44,75 +45,21 @@ class ServerThread extends Thread {
             try {
 
                 m = (Message) mI.readObject();
-                System.out.println("Master reciving: " + m.toString());
+                if (m != null)
+                    if (m.TTL > 0) {
+                        System.out.println("Master reciving: " + m.toString());
+                        Message.handel(m,this);
+                        System.out.println(m.toString());
 
-            } catch (EOFException e) {
+                    }
+
+
+            } catch (IOException | ClassNotFoundException e) {
                 //continue;
                 closeThread();
                 break;
-            } catch (IOException | ClassNotFoundException e) {
-
-                this.closeThread();
-                break;
-
             }
-            if (m != null)
-                if (m.TTL > 0) {
-                    MessageType reqType = m.messageType;
-                    System.out.println(m.toString());
-                    switch (reqType) {
 
-                        case GETALLUSERS:
-
-                            Message rr = new Message(masterServer.masterServerUser,m.receiver,"", MessageType.ONLINEUSERS);
-                            User[] onU = new User[masterServer.clientsNum];
-                            int i=0;
-                            for(User u : masterServer.knownActiveUsers) {
-                                if(u!=null) {
-                                    onU[i]=u;
-                                    i++;
-                                }
-                            }
-                            rr.users=onU;
-
-                            System.out.println("sending memberlist");
-
-                            sendToServer(rr);
-
-                            break;
-
-                        case PUBLIC:
-                        case PRIVATE:
-                            m.TTL=4;
-                            sendToServers(m);
-
-                            break;
-                        //case ONLINEUSERS:  now master have the main and only member list no more rerouting
-                        //sendToServers(m);
-                        //break;
-
-                        case REGISTER:Boolean av = masterServer.checkUserName(m.sender.userName);
-                            if(av) {
-                                masterServer.knownActiveUsers[masterServer.clientsNum] = m.sender;
-                                Message r = new Message(masterServer.masterServerUser,m.sender,"true",MessageType.REGISTER);
-                                r.users=m.users;
-                                System.err.println(r.users[0].toString());
-                                masterServer.clientsNum++;
-                                sendToServer(r);
-                                sendToServers(r);
-                            }else {
-                                Message r = new Message(masterServer.masterServerUser,m.sender,"false",MessageType.REGISTER);
-                                r.users=m.users;
-                                sendToServer(r);
-                            }break;
-
-                        case LOGOUT: logOut(m.msgBody);sendToServers(m);
-
-
-                        default:
-                            break;
-                    }
-                }
         }
 
     }
@@ -177,4 +124,76 @@ class ServerThread extends Thread {
 
     }
 
+    @Override
+    public void register(Message registerMessage) {
+        Boolean av = masterServer.checkUserName(registerMessage.sender.userName);
+        if(av) {
+            masterServer.knownActiveUsers[masterServer.clientsNum] = registerMessage.sender;
+            Message r = new Message(masterServer.masterServerUser,registerMessage.sender,"true",MessageType.REGISTER);
+            r.users=registerMessage.users;
+            System.err.println(r.users[0].toString());
+            masterServer.clientsNum++;
+            sendToServer(r);
+            sendToServers(r);
+        }else {
+            Message r = new Message(masterServer.masterServerUser,registerMessage.sender,"false",MessageType.REGISTER);
+            r.users=registerMessage.users;
+            sendToServer(r);
+        }
+
+    }
+
+    @Override
+    public void publicMessage(Message msg) {
+        msg.TTL=4;
+        sendToServers(msg);
+
+    }
+
+    @Override
+    public void privateMessage(Message msg) {
+        msg.TTL=4;
+        sendToServers(msg);
+
+    }
+
+    @Override
+    public void onlineUsersRequest(Message message) {
+
+    }
+
+    @Override
+    public void sendToAll(Message message) {
+
+    }
+
+    @Override
+    public void logout(Message msg) {
+        logOut(msg.msgBody);sendToServers(msg);
+    }
+
+    @Override
+    public void getAllUsers(Message msg) {
+
+        Message rr = new Message(masterServer.masterServerUser,msg.receiver,"", MessageType.ONLINEUSERS);
+        User[] onU = new User[masterServer.clientsNum];
+        int i=0;
+        for(User u : masterServer.knownActiveUsers) {
+            if(u!=null) {
+                onU[i]=u;
+                i++;
+            }
+        }
+        rr.users=onU;
+
+        System.out.println("sending memberlist");
+
+        sendToServer(rr);
+
+    }
+
+    @Override
+    public void newUser(Message msg) {
+
+    }
 }

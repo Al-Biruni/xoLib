@@ -1,11 +1,10 @@
 package Commons.Message;
 
-import Commons.SecretUser;
 import Commons.User;
 
 import java.io.Serializable;
 
-public class Message implements Serializable MasterHandler ServerHandler ClientHandler {
+public class Message implements Serializable  {
 
 	private static final long serialVersionUID = 2976187782154270436L;
 	public User sender=null,receiver=null;
@@ -14,6 +13,9 @@ public class Message implements Serializable MasterHandler ServerHandler ClientH
 	public String msgBody="";
 
 
+	public byte[] enMsg;
+	public byte[] key;
+	public byte[]iv;
 
 	public User[] users;
 
@@ -22,10 +24,9 @@ public class Message implements Serializable MasterHandler ServerHandler ClientH
 
 	
 	
-	public Message(User s, User r, String msg, MessageType msgType) {
-		this.sender=s;
-
-		this.receiver=r;
+	public Message(User sender, User receiver, String msg, MessageType msgType) {
+		this.sender=sender;
+		this.receiver=receiver;
 		this.msgBody=msg;
 		this.messageType=msgType;
 	}
@@ -34,6 +35,14 @@ public class Message implements Serializable MasterHandler ServerHandler ClientH
 		this.sender=s;
 		this.msgBody=msg;
 		this.messageType=messageType.PUBLIC;
+	}
+
+
+	public Message createOnlineUsersMessage(User s , User[] onUsers){
+		Message msg = new Message(s ,null,"",MessageType.ONLINEUSERS);
+		msg.users = onUsers;
+		return msg;
+
 	}
 	
 	//clone constructor 
@@ -47,8 +56,42 @@ public class Message implements Serializable MasterHandler ServerHandler ClientH
 		this.TTL=msg.TTL;
 		this.iv=msg.iv;
 		this.key=msg.key;
-				
-		
+	}
+
+
+
+	public static void handel(Message msg, MessageHandler handler) {
+
+
+		switch (msg.messageType) {
+
+			case GETALLUSERS:handler.getAllUsers(msg);
+				break;
+			case ONLINEUSERS:
+				handler.onlineUsersRequest(msg);
+
+				break;
+			case PRIVATE:
+				handler.privateMessage(msg);
+				break;
+			case PUBLIC:
+				handler.sendToAll(msg);
+				break;
+			case REGISTER:
+				handler.register(msg);
+				break;
+			case LOGOUT:
+				handler.logout(msg);
+				break;
+			case NEWUSER:handler.newUser(msg);
+				break;
+			default:
+				System.out.println("Default handling case " + msg);
+				break;
+
+		}
+
+
 	}
 
 	public void decTTL() {

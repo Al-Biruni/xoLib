@@ -18,7 +18,7 @@ public MasterServerConnectionListener(MasterServer masterServer){
 
                 try {
                     System.out.println("waiting for more servers");
-                    masterServer.ss = masterServer.Mserver.accept();
+                    masterServer.ss = MasterServer.Mserver.accept();
                 } catch (IOException e) {
 
                     e.printStackTrace();

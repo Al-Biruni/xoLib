@@ -48,4 +48,16 @@ public class SecretUser extends User {
         }
 
     }
+    public byte[] unsign(byte[] plainBytes) throws Exception {
+
+
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, prKey);
+            return cipher.doFinal(plainBytes);
+        } catch (Exception e) {
+            throw  new MessageCouldnotBeEncryptedException(e);
+        }
+
+    }
 }

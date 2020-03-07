@@ -1,6 +1,7 @@
 package View;
 
 import Client.*;
+import Commons.Exceptions.MessageCouldnotBeEncryptedException;
 import Commons.Message.Message;
 import Commons.User;
 
@@ -35,7 +36,7 @@ public class X_O extends JFrame implements ListSelectionListener {
 	public JTextField usrNameText;
 	public JButton btnSend;
 	public JButton checkUsrBtn;
-	private Client cl;
+	private ClientListener cl;
 	public JDialog userReg;
 	public JList onUsr ;
 	public JList list;
@@ -46,7 +47,7 @@ public class X_O extends JFrame implements ListSelectionListener {
 	public X_O(ClientListener cl)  {
 		super("View.X_O");
 		
-		this.cl = (Client) cl;
+		this.cl =  cl;
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 	
@@ -140,7 +141,11 @@ userReg.setVisible(true);
 		btnSend = new JButton("send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-			getCl().onSend();
+				try {
+					getCl().onSend();
+				} catch (MessageCouldnotBeEncryptedException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		
@@ -270,7 +275,7 @@ userReg.setVisible(true);
 	}
 
 	void setCl(ClientListener cl) {
-		this.cl = (Client) cl;
+		this.cl =  cl;
 	}
 
 
@@ -288,5 +293,16 @@ userReg.setVisible(true);
 		this.rdbtnPublic.setSelected(false);
 		
 	}
-	
+	public static void main(String [] args){
+		Client user = new Client();
+		ClientController userViewController = new ClientController(user);
+		X_O win = new X_O(userViewController);
+		userViewController.setView(win);
+		win.regDialog();
+		user.run();
+		win.setVisible(true);
+
+
+	}
+
 }

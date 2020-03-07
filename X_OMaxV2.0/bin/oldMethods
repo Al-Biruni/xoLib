@@ -1,0 +1,69 @@
+								register(masterReq.users[0],masterReq.receiver);
+
+										for(ClientThread ct : activeClients) {
+											if(ct!=null) {
+												if(ct.cUser!=null)
+											if(ct.cUser.userName.equals(masterReq.receiver.userName)){
+												ct.sendToClient(masterReq);
+
+
+											}else {
+												ct.sendToClient( new Message(serverUser,masterReq.receiver,"",MessageType.NEWUSER));
+											}
+											}
+										}
+
+
+									}else {
+										//the registration process is made with a temp user created with the client number
+										//so we can communicate with the registering user without having a duplicated name we save the temp user in User[0] we manipulated this for less variables this isnt the intended use
+										for(ClientThread ct : activeClients) {
+											if(ct!=null)
+											if(ct.cUser.userName.equals(masterReq.users[0].userName)){
+												ct.sendToClient(masterReq);
+
+
+											}
+										}
+
+									}
+									                                switch (mt) {
+                                                                        case PUBLIC:
+                                    //                                        clientsConnectionsManager.sendToAll(receivedMsg);
+                                    //
+                                    //                                        masterConnectionManger.sendToMaster(receivedMsg);
+
+                                                                            break;
+                                                                        case PRIVATE:
+
+                                                                            break;
+                                                                        case GETALLUSERS:
+                                    //
+                                    //                                        Message m = new Message(clientsConnectionsManager.getUser(), receivedMsg.sender, "", MessageType.GETALLUSERS);
+                                    //                                        masterConnectionManger.sendToMaster(m);
+                                                                            break;
+
+                                                                        case REGISTER:
+                                    //
+                                    //
+                                    //                                        String cn = "";
+                                    //                                        cn += clientNumber;
+                                    //                                        cUser = new User(cn, null);
+                                    //                                        //cUser.userName=cn;
+                                    //                                        receivedMsg.users = new User[1];
+                                    //                                        receivedMsg.users[0] = cUser;
+                                    //                                        receivedMsg.TTL = 4;
+                                    //                                        masterConnectionManger.sendToMaster(receivedMsg);
+                                                                            break;
+
+
+                                                                        case LOGOUT:
+                                    //                                        close();
+                                                                            break;
+
+
+                                                                        default:
+                                                                            System.err.println("NO Such request");
+                                                                            break;
+
+                                                                    }

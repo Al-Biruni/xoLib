@@ -2,9 +2,11 @@ package Client;
 
 import Commons.Exceptions.MessageCouldnotBeEncryptedException;
 import Commons.Message.Message;
+import Commons.Message.MessageHandler;
 import Commons.Message.MessageType;
 import Commons.SecretUser;
 import Commons.User;
+import SlaveServer.Server;
 import View.X_O;
 
 import java.io.BufferedReader;
@@ -36,7 +38,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class Client implements ClientListener {
+public class Client  {
 
 	protected ObjectOutputStream oo;
 	protected ObjectInputStream oi;
@@ -46,19 +48,21 @@ public class Client implements ClientListener {
 	protected String host;
 	protected int serverPort;
 
+
+
+	protected ClientController clientController;
+
 	protected User server;
 
-	private static X_O win;
-	protected static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
 	protected SecretUser user;
 	protected User[] knownActiveUsers;
 
 	public Client() {
 
-		win = new X_O(this);
+
 		serverPort = 6000;
-		win.regDialog();
+
 
 		try {
 			cS = new Socket("localhost", serverPort);
@@ -71,100 +75,46 @@ public class Client implements ClientListener {
 
 	}
 
-	Thread receiveMsg;
 
-	public void run() throws ClassNotFoundException, IOException {
 
-		receiveMsg = new Thread() {
-			Message receivedMsg;
+	public void run() {
+		Message receivedMsg;
+		while (true) {
+			try {
 
-			public void run() {
-				while (true) {
-					try {
 
-						receivedMsg = (Message) oi.readObject();
+				receivedMsg = (Message) oi.readObject();
 
-						if (receivedMsg != null)
-						if(receivedMsg.TTL>0){
-							System.out.println("Client.Client recived : \n" + receivedMsg.toString());
-							switch (receivedMsg.messageType) {
-
-							case PUBLIC:
-								win.msgArea.setText(win.msgArea.getText() + "\n " + receivedMsg.sender.userName + " : "
-										+ receivedMsg.msgBody);
-								break;
-							case PRIVATE:
-								String dMsg = decrypt(receivedMsg);
-								win.msgArea.setText(
-										win.msgArea.getText() + "\n " + receivedMsg.sender.userName + " : " + dMsg);
-								break;
-							case ONLINEUSERS:
-								User[] onUsr = receivedMsg.users;
-								for (User u : onUsr)
-									if (u != null)
-										win.listModel.addElement(u);
-								// System.out.println(u.userName);
-								break;
-							case REGISTER:
-
-					
-									if (receivedMsg.msgBody.equals("true")) {
-
-										win.userReg.setVisible(false);
-										win.chatView();
-
-										Message getMembers = new Message(user, server, "", MessageType.GETALLUSERS);
-										sendMessage(getMembers);
-
-									} else {
-										win.usrNameText.setText("Choose diffrentuser name");
-
-									}
-							
-
-								break;
-							case LOGOUT:for(int i=0;i<win.listModel.getSize();i++) {
-								if(win.listModel.get(i).userName.equals(receivedMsg.msgBody)) {
-									win.listModel.remove(i);
-									break;
-								}
-							}
-								
-							case NEWUSER:
-								win.listModel.addElement(receivedMsg.receiver);
-							
-
-							break;
-							default:
-								System.out.println(receivedMsg.msgBody + "  " + receivedMsg.messageType);
-								break;
-
-							}
-						}
-
-					} catch (EOFException e) {
-						closeApp();
-						// continue;
-						// System.out.println("endofM");
-					} catch (IOException e) {
-
-						closeApp();
-					} catch (ClassNotFoundException e) {
-
-						e.printStackTrace();
-						closeApp();
+				if (receivedMsg != null)
+					if (receivedMsg.TTL > 0) {
+						System.out.println("Client.Client recived : \n" + receivedMsg.toString());
+						Message.handel(receivedMsg, clientController);
 					}
 
-				}
+			} catch (EOFException e) {
+				closeApp();
+				// continue;
+				// System.out.println("endofM");
+			} catch (IOException e) {
+
+				closeApp();
+			} catch (ClassNotFoundException e) {
+
+				e.printStackTrace();
+				closeApp();
+
 			}
+		}
 
-		};
 
-		receiveMsg.start();
+
+
 
 	}
 
-	private void sendMessage(Message m) {
+
+
+	void sendMessage(Message m) {
 
 		try {
 
@@ -176,8 +126,9 @@ public class Client implements ClientListener {
 		}
 	}
 
-	private void closeApp() {
+	void closeApp() {
 		try {
+			sendMessage(new Message(user,server,user.userName,MessageType.LOGOUT));
 			oo.close();
 			oi.close();
 			cS.close();
@@ -215,8 +166,8 @@ public class Client implements ClientListener {
 					cipher.doFinal(skey.getEncoded());
 			byte[] encryptedIV = cipher.doFinal(iv);
 			//sign the key with my private key so the reciver be sure that i was the source
-			encryptedKey = user.sign(encryptedKey);
-			encryptedIV = user.sign(encryptedIV);
+		//	encryptedKey = user.sign(encryptedKey);
+		//	encryptedIV = user.sign(encryptedIV);
 
 			 msg.enMsg=encryptedtext;
 			 msg.key=encryptedKey;
@@ -235,14 +186,12 @@ public class Client implements ClientListener {
 	}
 
 	public String decrypt(Message msg ) {
-		Cipher cipher;
 		try {
-			cipher = Cipher.getInstance("RSA");
-			//make sure it is only read by  me
-			cipher.init(Cipher.DECRYPT_MODE, this.prKey);
 
-			byte[] key = cipher.doFinal(msg.key);
-			byte[] iv = cipher.doFinal(msg.iv);
+			byte[] key = user.unsign(msg.key);
+			//cipher.doFinal(msg.key);
+			byte[] iv =user.unsign(msg.iv);
+					//cipher.doFinal(msg.iv);
 			IvParameterSpec ivspec = new IvParameterSpec(iv);
 
 			SecretKey skey = new SecretKeySpec(key,"AES");
@@ -269,74 +218,30 @@ public class Client implements ClientListener {
 		} catch (InvalidAlgorithmParameterException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return "null";
 
 	}
 //------------------------------------------------------------------------------------------------------
 
-	@Override
-	public void onSend() {
-		Message m = null;
 
-		String msg = win.msgText.getText();
 
-		if (win.rdbtnPrivate.isSelected()) {
-			User receiver = win.listModel.get(win.list.getSelectedIndex());
-			m = new Message(this.user, receiver, msg, MessageType.PRIVATE);
-			//byte[] eMsg = 
-					encrypt(m);
 
-			
-			//m.enMsg = eMsg;
-		} else {
-			m = new Message(user, msg);
-		}
-
-		win.msgText.setText("");
-		sendMessage(m);
-
-		if (msg.equals("quit")) {
-			win.setVisible(false);
-			closeApp();
-
-		}
-	}
-
-	@Override
-	public void Register(String userName) {
-		KeyPairGenerator keyGen;
-
-		try {
-			keyGen = KeyPairGenerator.getInstance("RSA");
-			keyGen.initialize(1024);
-			KeyPair pair = keyGen.generateKeyPair();
-			pbKey = pair.getPublic();
-			prKey = pair.getPrivate();
-
-			user = new User(userName, pbKey);
-			Message m = new Message(user, null, "", MessageType.REGISTER);
-
-			sendMessage(m);
-
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
 
 	public static void main(String[] args) {
 		Client c = null;
 		c = new Client();
 
-		try {
-			c.run();
-		} catch (ClassNotFoundException | IOException e) {
-
-			e.printStackTrace();
-		}
+		c.run();
 
 	}
 
+
+
+
+	public void setClientController(ClientController clientController) {
+		this.clientController = clientController;
+	}
 }

@@ -9,10 +9,10 @@ public class ClientConnectionListener extends Thread {
     protected Socket newClientS;
     protected ServerSocket mySocket;
 
-    protected ClientsConnections clientsConnections;
+    protected ClientsConnectionsManager clientsConnectionsManager;
 
-    public ClientConnectionListener(int clientPort, ClientsConnections clientsConnections) throws IOException {
-        this.clientsConnections = clientsConnections;
+    public ClientConnectionListener(int clientPort, ClientsConnectionsManager clientsConnectionsManager) throws IOException {
+        this.clientsConnectionsManager = clientsConnectionsManager;
         mySocket = new ServerSocket(clientPort);
         newClientS = new Socket();
 
@@ -30,7 +30,7 @@ public class ClientConnectionListener extends Thread {
             if (newClientS != null) {
 
                 System.out.println("COnnecting creating new THread");
-                clientsConnections.addNewClient(newClientS);
+                clientsConnectionsManager.addNewClient(newClientS);
 
                 newClientS = new Socket();
 

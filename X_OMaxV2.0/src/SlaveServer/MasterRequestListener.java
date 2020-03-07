@@ -1,6 +1,7 @@
 package SlaveServer;
 
 import Commons.Message.Message;
+import masterServer.MasterServer;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -8,9 +9,11 @@ import java.io.ObjectInputStream;
 
 public class MasterRequestListener extends Thread {
     ObjectInputStream masterInputStream;
+    SlaveServerMasterMessageHandler  masterRequestHandler;
 
-    public MasterRequestListener(ObjectInputStream masterInputStream) {
-        this.masterInputStream = masterInputStream;
+    public MasterRequestListener(Server server) {
+        masterRequestHandler = server.getMasterRequestHandler();
+        this.masterInputStream = server.masterConnectionManger.getInputStream();
 
     }
 
@@ -20,8 +23,9 @@ public class MasterRequestListener extends Thread {
             // check for master
             try {
                 masterReq = (Message) masterInputStream.readObject();
+
                 if (validMasterRequest(masterReq)) {
-                   handelMessage(masterReq);
+                    Message.handel(masterReq,masterRequestHandler);
                     System.out.println("MAster  request: " + masterReq.toString());
 
                 }
@@ -34,9 +38,6 @@ public class MasterRequestListener extends Thread {
         }
     }
 
-    private void handelMessage(Message masterReq) {
-
-    }
 
     private boolean validMasterRequest(Message masterReq) {
         if(masterReq == null || masterReq.TTL<=0)

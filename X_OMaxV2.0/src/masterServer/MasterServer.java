@@ -1,58 +1,43 @@
 package masterServer;
 
+import Commons.SecretUser;
 import Commons.User;
+import SlaveServer.MasterConnectionManger;
 
 
 import java.io.IOException;
-
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
+
 
 
 public class MasterServer {
 	protected Socket ss;
 	protected static ServerSocket Mserver;
-	protected int port;
-	
+
 	protected  int clientsNum=0;
 	protected final static int maxServers = 4;
-
 
 	protected ServerThread[] serverThreads = new ServerThread[maxServers];
 	protected User[] knownActiveUsers = new User[200];
 	
-	protected static User masterServerUser;
-	public static PublicKey pbKey;
-	protected static PrivateKey prKey;
-	protected Signature rsa;
+	protected static SecretUser masterServerUser;
+
 
 
 	public static void main(String[] args) {
 		int serverPort = 6500;
 
-		KeyPairGenerator keyGen;
+
+
 		try {
-			keyGen = KeyPairGenerator.getInstance("RSA");
-			keyGen.initialize(1024);
-			KeyPair pair = keyGen.generateKeyPair();
-			pbKey = pair.getPublic();
-			prKey = pair.getPrivate();
-			masterServerUser = new User("master", pbKey);
+			masterServerUser = SecretUser.generateSecretUser("MasterServer");
 			Mserver = new ServerSocket(serverPort);
 			MasterServer s = new MasterServer();
 			s.run();
-		} catch (NoSuchAlgorithmException e1) {
-
-			e1.printStackTrace();
-
-		} catch (IOException e) {
-			System.out.println(e);
+		}catch (Exception e) {
+			System.err.println("Couldn't initialize master server ");
+			e.printStackTrace();
 		}
 
 	}
@@ -74,7 +59,6 @@ public class MasterServer {
 		
 		return true;
 	}
-
 
 
 }
