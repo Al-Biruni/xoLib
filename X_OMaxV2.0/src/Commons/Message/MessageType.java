@@ -1,5 +1,0 @@
-package Commons.Message;
-
-public enum MessageType {
-	PUBLIC,PRIVATE,GETALLUSERS,ONLINEUSERS,REGISTER,LOGOUT,NEWUSER
-}
