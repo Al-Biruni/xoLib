@@ -1,6 +1,8 @@
 <component name="libraryTable">
   <library name="src">
-    <CLASSES />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Commons/build/libs/Commons-1.0-SNAPSHOT.jar!/" />
+    </CLASSES>
     <JAVADOC />
     <SOURCES />
   </library>
