@@ -1,10 +1,10 @@
-package ClientJavaInterface;
+package ClientJavaInterface.View;
 
 import xoLib.Exceptions.MessageCouldnotBeEncryptedException;
 
-public interface ClientListener {
+public interface ClientInterfaceListener {
  void onSend() throws MessageCouldnotBeEncryptedException;
-void Register(String userName);
+void onRegisterBtnClick(String userName);
 
 
 }

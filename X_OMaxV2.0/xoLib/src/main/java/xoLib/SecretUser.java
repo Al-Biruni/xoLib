@@ -3,58 +3,74 @@ package xoLib;
 
 import xoLib.Exceptions.MessageCouldnotBeEncryptedException;
 
-import javax.crypto.Cipher;
+import javax.crypto.*;
 
+
+import java.nio.ByteBuffer;
 import java.security.*;
+import java.util.Arrays;
+import java.util.Base64;
 
 public class SecretUser extends User {
-    protected static PrivateKey prKey;
+    protected static PrivateKey privateKey;
+    protected KeyPair myKey;
 
-    private SecretUser(String userName , PublicKey pbKey, PrivateKey prKey){
-        super(userName,pbKey);
-        this.prKey = prKey;
+    protected SecretUser(String userName, KeyPair keyPair) {
+        super(userName, keyPair.getPublic());
+        myKey = keyPair;
+        this.privateKey = keyPair.getPrivate();
 
     }
 
     public static SecretUser generateSecretUser(String userName) throws Exception {
         try {
-            KeyPairGenerator  keyGen = KeyPairGenerator.getInstance("RSA");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(1024);
             KeyPair pair = keyGen.generateKeyPair();
-            PublicKey  pbKey = pair.getPublic();
-            PrivateKey  prKey = pair.getPrivate();
 
-            return new SecretUser(userName , pbKey, prKey);
+            return new SecretUser(userName, pair);
 
         } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        throw new Exception("Couldn't intialize keys");
+        throw new Exception("Couldn't initialize keys");
     }
 
     public byte[] sign(byte[] plainBytes) throws Exception {
 
 
         try {
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.ENCRYPT_MODE, prKey);
-            return cipher.doFinal(plainBytes);
+            Signature privateSignature = Signature.getInstance("SHA256withRSA");
+            byte[] data = new byte[100];
+            privateSignature.initSign(myKey.getPrivate());
+            privateSignature.update(plainBytes);
+
+
+            byte [] signedBytes = privateSignature.sign();
+
+      return signedBytes ;
+
         } catch (Exception e) {
-            throw  new MessageCouldnotBeEncryptedException(e);
+            e.printStackTrace();
+            throw new MessageCouldnotBeEncryptedException(e);
         }
 
     }
-    public byte[] unsign(byte[] plainBytes) throws Exception {
+
+    public byte[] decryptDataWithPrivateKey(byte[] encryptedBytes) throws Exception {
 
 
         try {
             Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.DECRYPT_MODE, prKey);
-            return cipher.doFinal(plainBytes);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            return cipher.doFinal(encryptedBytes);
         } catch (Exception e) {
-            throw  new MessageCouldnotBeEncryptedException(e);
+            throw new MessageCouldnotBeEncryptedException(e);
         }
 
     }
+
+
+
+
 }
